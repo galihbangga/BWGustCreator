@@ -8,6 +8,11 @@ Users will be able to generate a wind file that simulate three types of gust
  
 both for wind speed and wind direction. Usage of the script is without any guarantee.
 
+
+# Contributing and Bugs
+Contributions are welcomed! For bugs, please contact Galih Bangga, galih.bangga@dnv.com.
+
+
 # Usage
 
 The main code and input definition can be found on main.py. The following parameters define the input file:
@@ -34,8 +39,4 @@ Overhang: Value of rotor overhang\
 LateralOffset: Value of rotor lateral offset\
 Floating: Is the wind file prepared for floating wind turbine? "YES" or "NO"\
 SeaDepth: Sea depth, only relevant for floating model\
-OutName: Name of the output file, extension shall be set to .wnd, for example "Wind_ECG_ECG.wnd"\
-
-
-# Contributing and Bugs
-Contributions are welcomed! For bugs, please contact Galih Bangga, galih.bangga@dnv.com.
+OutName: Name of the output file, extension shall be set to .wnd, for example "Wind_ECG_ECG.wnd"
