@@ -15,19 +15,14 @@ If Bug is found, please contact galih.bangga@dnv.com
 import BladedWindCreator as BladedWindCreator 
 
 
-
-
-
-    
-
-
 ##############################################
 # INPUT DATA
 ##############################################
 
 # Wind duration
-TimeStep = 1
-TimeEnd = 300
+TimeEnd = 300 # in s
+TimeStep = 1 # in s
+
 
 # Gust definition for wind speed
 GustTypeSpeed = 'HALF'
