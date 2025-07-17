@@ -55,8 +55,7 @@ LateralOffset = 0 # Rotor lateral offset
 Floating = "NO" # (NO or YES)
 SeaDepth = 0 # Only needed for floating model
 
-
-
+# Output name
 OutName = "Wind_ECG_ECD.wnd"
 
 BladedWindCreator.manager.create_wind_file(TimeStep,TimeEnd,
