@@ -49,7 +49,7 @@ dz = 20 # vertical grid spacing in m
 
 # Calculation of "Start time for turbulent wind" to apply gust at the desired time instance
 TowerExtremaLocation = 0 # For jacket model or large support structure, otherwise just zero
-NominalRotorDiameter = 120.97
+NominalRotorDiameter = 291.94 # FNominal rotor diameter without cone from Bladed screen
 Overhang = 12.03 # Rotor overhang
 LateralOffset = 0 # Rotor lateral offset
 Floating = "NO" # (NO or YES)

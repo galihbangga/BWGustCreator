@@ -77,16 +77,16 @@ def gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,
             the_file.write(' GUST INFORMATION\n')
             the_file.write(' ---------------------------- \n')
             the_file.write(' Gust type wind speed: ' + str(GustTypeSpeed) +'\n')
-            the_file.write(' Gust start time wind speed: ' + str(GustSpeedStartTime) +' m\n')
-            the_file.write(' Gust end time wind speed: ' + str(GustSpeedEndTime) +' m\n')    
+            the_file.write(' Gust start time wind speed: ' + str(GustSpeedStartTime) +' s\n')
+            the_file.write(' Gust end time wind speed: ' + str(GustSpeedEndTime) +' s\n')    
             the_file.write(' Gust start magnitude wind speed: ' + str(GustSpeedStart) +' m\n')
             the_file.write(' Gust amplitude wind speed: ' + str(GustSpeedAmplitude) +' m\n')
             the_file.write('  \n')
             the_file.write(' Gust type wind direction: ' + str(GustTypeDir) +'\n')
-            the_file.write(' Gust start time wind direction: ' + str(GustDirStartTime) +' m\n')
-            the_file.write(' Gust end time wind direction: ' + str(GustDirEndTime) +' m\n')    
-            the_file.write(' Gust start magnitude wind direction: ' + str(GustDirStart) +' m\n')
-            the_file.write(' Gust amplitude wind direction: ' + str(GustDirAmplitude) +' m\n')
+            the_file.write(' Gust start time wind direction: ' + str(GustDirStartTime) +' s\n')
+            the_file.write(' Gust end time wind direction: ' + str(GustDirEndTime) +' s\n')    
+            the_file.write(' Gust start magnitude wind direction: ' + str(GustDirStart) +' deg\n')
+            the_file.write(' Gust amplitude wind direction: ' + str(GustDirAmplitude) +' deg\n')
  
  
     return Time,Speed,Direction,Vel_x,Vel_y,Vel_z
