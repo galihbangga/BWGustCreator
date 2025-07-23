@@ -17,6 +17,7 @@ from . import organizer
 from . import message
 from . import wind_file_creator
 from . import gust_creator
+from . import wind_shift
 
 ###########################################################################
 # 
@@ -52,7 +53,7 @@ def create_wind_file(TimeStep,TimeEnd,
     wind_file_creator.generate_uniform_bladed_wind(LogFilePath,OutName,grid_properties,Vel_x,Vel_y,Vel_z,GustSpeedStart)
 
     # Calculate information about turbulent buffer time
-    wind_file_creator.buffer_time(LogFilePath,TimeEnd,TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,GustSpeedStart)
+    wind_shift.buffer_time(LogFilePath,TimeEnd,TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,GustSpeedStart)
 
     # Splash screen
     message.splash_end()
