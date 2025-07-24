@@ -31,11 +31,11 @@ def windlistarange(u,v,w):
     return vel
 
 
-def collect_grid_info(LogFilePath,Ly,Lz,dy,dz,TimeEnd,TimeStep,RefWindSpeed):
+def collect_grid_info(LogFilePath,Ly,Lz,dy,dz,Time,TimeStep,RefWindSpeed):
     
-    Lx = RefWindSpeed * TimeEnd
+    Lx = RefWindSpeed * Time[-1]
     dx = RefWindSpeed * TimeStep
-    num_x = int(TimeEnd/TimeStep)
+    num_x = int(Time[-1]/TimeStep)
     num_y = int(Ly/dy)
     num_z = int(Lz/dz)
     
