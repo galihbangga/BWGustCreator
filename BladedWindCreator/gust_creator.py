@@ -47,7 +47,26 @@ def gust_creator(Time,Mean,Amplitude,Start,End,Type):
     return Gust    
 
 
-def gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,
+def adding_linear_smooth_time(Time,TimeSmooth,TimeStep,ValueBaseline):
+    
+    if (TimeSmooth > 0):
+    
+        Time_Smooth = np.arange(Time[-1]+TimeStep,Time[-1]+TimeSmooth+TimeStep,TimeStep)
+        
+        gradient = (ValueBaseline[0]-ValueBaseline[-1])/(Time_Smooth[-1]-Time[-1])
+        
+        ValueSmooth = ValueBaseline[-1] + gradient*(Time_Smooth-Time[-1])
+        
+        Time_Total = np.append(Time,Time_Smooth)
+        Value_Total = np.append(ValueBaseline,ValueSmooth)
+    
+    else:
+        Time_Total = Time * 1.0
+        Value_Total = ValueBaseline * 1.0
+    
+    return Time_Total,Value_Total
+
+def gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                              GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
                              GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude):
     
@@ -66,9 +85,21 @@ def gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,
     Vel_z = np.zeros(len(Speed))
     
     
+    print(" Adding smoothing regime toward the end of wind file.")
+    Time_Smoothed,Vel_x_Smoothed = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Vel_x)
+    Time_Smoothed,Vel_y_Smoothed = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Vel_y)
+    Time_Smoothed,Vel_z_Smoothed = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Vel_z)
+    
+    
+    print(" Recalculating wind speed and direction due to smoothing effect.")
+    Speed_Smoothed = np.sqrt(Vel_x_Smoothed**2 + Vel_y_Smoothed**2 + Vel_z_Smoothed**2)
+    Direction_Smoothed = np.arctan2(Vel_y_Smoothed,Vel_x_Smoothed) * 180 / np.pi
+    
+    
     print(" Plot gust responses.")
     # Plot results
-    plotter.plot_wind_signal(Output_Directory_Path,Time,Speed,Direction,Vel_x,Vel_y)
+    plotter.plot_wind_signal(Output_Directory_Path,Time_Smoothed,Speed_Smoothed,Direction_Smoothed,Vel_x_Smoothed,Vel_y_Smoothed,
+                            GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime)
     
     
     with open(LogFilePath, 'a') as the_file:
@@ -76,6 +107,10 @@ def gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,
             the_file.write(' ---------------------------- \n')
             the_file.write(' GUST INFORMATION\n')
             the_file.write(' ---------------------------- \n')
+            the_file.write(' Target wind file end time: ' + str(Time[-1]) +' s\n')
+            the_file.write(' Additional smoothing time: ' + str(Time_Smoothed[-1]-Time[-1]) +' s\n')
+            the_file.write(' Total resulting end time of wind file: ' + str(Time_Smoothed[-1]) +' s\n')
+            the_file.write('  \n')
             the_file.write(' Gust type wind speed: ' + str(GustTypeSpeed) +'\n')
             the_file.write(' Gust start time wind speed: ' + str(GustSpeedStartTime) +' s\n')
             the_file.write(' Gust end time wind speed: ' + str(GustSpeedEndTime) +' s\n')    
@@ -87,9 +122,10 @@ def gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,
             the_file.write(' Gust end time wind direction: ' + str(GustDirEndTime) +' s\n')    
             the_file.write(' Gust start magnitude wind direction: ' + str(GustDirStart) +' deg\n')
             the_file.write(' Gust amplitude wind direction: ' + str(GustDirAmplitude) +' deg\n')
+
+            
  
- 
-    return Time,Speed,Direction,Vel_x,Vel_y,Vel_z
+    return Time_Smoothed,Speed_Smoothed,Direction_Smoothed,Vel_x_Smoothed,Vel_y_Smoothed,Vel_z_Smoothed
 
         
         

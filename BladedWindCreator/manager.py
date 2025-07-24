@@ -24,12 +24,12 @@ from . import wind_shift
 ###########################################################################
     
 
-def create_wind_file(TimeStep,TimeEnd,
+def create_wind_file(TimeStep,TimeEnd,TimeSmooth,
                    GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
                    GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                    Ly,Lz,dy,dz,
                    OutName,
-                   TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth):
+                   TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart):
     
     
     
@@ -44,16 +44,16 @@ def create_wind_file(TimeStep,TimeEnd,
     Output_Directory_Path,LogFilePath = organizer.create_output_directory()
     
     # Create gust timeseries
-    Time,Speed,Direction,Vel_x,Vel_y,Vel_z = gust_creator.gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,
+    Time,Speed,Direction,Vel_x,Vel_y,Vel_z = gust_creator.gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                                  GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
                                  GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude)
     
     # Generate Bladed wind formatted data
-    grid_properties = wind_file_creator.collect_grid_info(LogFilePath,Ly,Lz,dy,dz,TimeEnd,TimeStep,GustSpeedStart)
+    grid_properties = wind_file_creator.collect_grid_info(LogFilePath,Ly,Lz,dy,dz,Time,TimeStep,GustSpeedStart)
     wind_file_creator.generate_uniform_bladed_wind(LogFilePath,OutName,grid_properties,Vel_x,Vel_y,Vel_z,GustSpeedStart)
 
     # Calculate information about turbulent buffer time
-    wind_shift.buffer_time(LogFilePath,TimeEnd,TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,GustSpeedStart)
+    wind_shift.buffer_time(LogFilePath,Time,TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,GustSpeedStart,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart)
 
     # Splash screen
     message.splash_end()
