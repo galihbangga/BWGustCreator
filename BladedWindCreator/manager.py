@@ -52,12 +52,12 @@ def  create_gust_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties
  
 def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
-                             Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DRadius,Gust2DEccentricity,
+                             Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,
                              Ly,Lz,dy,dz):   
     
     # Create gust timeseries
     Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
-                                 Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DRadius,Gust2DEccentricity,
+                                 Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,
                                  Ly,Lz,dy,dz)
     
     return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties 

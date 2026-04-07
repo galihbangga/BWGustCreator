@@ -196,7 +196,7 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
         
         
 def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
-                             GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustRadius,GustEccentricity,
+                             GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustEccentricity,GustCenter_Y,GustCenter_Z,
                              Ly,Lz,dy,dz):
     
     
@@ -216,11 +216,6 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     w_array = np.ones(((num_x,num_y,num_z)))
     Speed_array = np.ones(((num_x,num_y,num_z)))
     Direction_array = np.ones(((num_x,num_y,num_z)))
-    
-    
-    # Center grid
-    ctr_idx_j = int(0.5*num_y)
-    ctr_idx_k = int(0.5*num_z)
     
     
     # Gust 2D function
@@ -248,17 +243,18 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     uniform_wind_z = 0*np.ones(len(Time))
      
     print(" Creating gust scaling response in space for wind speed.")  
+    ctr_idx_j = int(0.5*num_y)
+    ctr_idx_k = int(0.5*num_z)
     for k in range(0,num_z): 
         for j in range(0,num_y): 
-            y_loc = (j - ctr_idx_j) * dy
-            z_loc = (k - ctr_idx_k) * dz
+            y_loc = (j - ctr_idx_j) * dy - GustCenter_Y
+            z_loc = (k - ctr_idx_k) * dz - GustCenter_Z
             Radius_Loc = np.sqrt(y_loc**2 + z_loc**2)
-            u_array[:,j,k] = uniform_wind_x + Gust_Function * 5/2 * ( 1 + np.tanh(-2*np.pi*( 2 * Radius_Loc * GustEccentricity / GustRadius -1 )) )
+            u_array[:,j,k] = uniform_wind_x + Gust_Function * 5/2 * ( 1 + np.tanh(-2*np.pi*( 2 * Radius_Loc * GustEccentricity - 1 )) )
             v_array[:,j,k] = uniform_wind_y
             w_array[:,j,k] = uniform_wind_z
             Speed_array[:,j,k] = np.sqrt(u_array[:,j,k]**2 + v_array[:,j,k]**2 + w_array[:,j,k]**2)
             Direction_array[:,j,k] = np.arctan2(v_array[:,j,k],u_array[:,j,k]) * 180 / np.pi
-            
                
     print(" Plot gust responses at various random locations.")
     
@@ -312,8 +308,9 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             the_file.write(' Gust start time wind speed: ' + str(GustSpeedStartTime) +' s\n')
             the_file.write(' Gust end time wind speed: ' + str(GustSpeedEndTime) +' s\n')    
             the_file.write(' Gust start magnitude wind speed: ' + str(GustSpeedStart) +' m\n')
-            the_file.write(' Gust radius: ' + str(GustRadius) +' m\n')
             the_file.write(' Gust eccentricity: ' + str(GustEccentricity) +' \n')
+            the_file.write(' Gust center Y: ' + str(GustCenter_Y) +' \n')
+            the_file.write(' Gust center Z: ' + str(GustCenter_Z) +' \n')
  
     return Time,Speed_array,Direction_array,u_array,v_array,w_array,grid_properties
         

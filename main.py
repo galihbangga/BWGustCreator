@@ -60,8 +60,8 @@ RotorOrientation = 'UPWIND' # either UPWIND or DOWNWIND
 OriginOfWindFileStart = 'HUB' # reference starting point of the wind file, either HUB or GLOBAL
 
 
-# Output name
-OutName = "Wind_ECG_ECD.wnd"
+# # Output name
+# OutName = "Wind_ECG_ECD.wnd"
 
 
 
@@ -86,22 +86,67 @@ TimeSmooth = 5 # in s, additional time on top of TimeEnd to smooth the wind spee
 Gust2DSpeedStartTime = 200 # in s
 Gust2DSpeedEndTime = 240 # in s
 Gust2DSpeedStart = 6 # in m/s
-Gust2DRadius = 284 # in m
-Gust2DEccentricity = 1 # scale
+Gust2DEccentricity = 1/284 # scale
+GustCenter_Y = 0 # in m, measured from center of grid
+GustCenter_Z = 0 # in m, measured from center of grid
 
 # Wind grid information
 Ly = 400 # lateral domain size in m
 Lz = 400 # vertical domain size in m
-dy = 5 # lateral grid spacing in m
-dz = 5 # vertical grid spacing in m
+dy = 10 # lateral grid spacing in m
+dz = 10 # vertical grid spacing in m
+
+
+# Output name
+OutName = "Wind_ECG_ECD_Coherennt.wnd"
 
 Output_Directory_Path,LogFilePath,start_execution_time = BladedWindCreator.manager.directory_preparation()
 Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = BladedWindCreator.manager.create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
-                             Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DRadius,Gust2DEccentricity,
+                             Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,
                              Ly,Lz,dy,dz)
 BladedWindCreator.manager.generate_wind_file(LogFilePath,Output_Directory_Path,OutName,
                         Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties,
                         Gust2DSpeedStart,
                         TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart,
                         start_execution_time)
+
+
+
+
+
+
+
+
+# # Wind duration
+# TimeEnd = 300 # in s
+# TimeStep = 0.1 # in s
+# TimeSmooth = 5 # in s, additional time on top of TimeEnd to smooth the wind speeed back to initial value (avoiding instability)
+
+# # Gust definition for wind speed
+# Gust2DSpeedStartTime = 200 # in s
+# Gust2DSpeedEndTime = 220 # in s
+# Gust2DSpeedStart = 6 # in m/s
+# Gust2DEccentricity = 3/430 # scale
+GustCenter_Y = 0 # in m, measured from center of grid
+GustCenter_Z = 0 # in m, measured from center of grid
+
+# # Wind grid information
+# Ly = 400 # lateral domain size in m
+# Lz = 400 # vertical domain size in m
+# dy = 10 # lateral grid spacing in m
+# dz = 10 # vertical grid spacing in m
+
+
+# # Output name
+# OutName = "Wind_ECG_ECD_Coherennt.wnd"
+
+# Output_Directory_Path,LogFilePath,start_execution_time = BladedWindCreator.manager.directory_preparation()
+# Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = BladedWindCreator.manager.create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+#                              Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,
+#                              Ly,Lz,dy,dz)
+# BladedWindCreator.manager.generate_wind_file(LogFilePath,Output_Directory_Path,OutName,
+#                         Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties,
+#                         Gust2DSpeedStart,
+#                         TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart,
+#                         start_execution_time)
 
