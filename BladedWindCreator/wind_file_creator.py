@@ -31,29 +31,32 @@ def windlistarange(u,v,w):
     return vel
 
 
-def collect_grid_info(LogFilePath,Ly,Lz,dy,dz,Time,TimeStep,RefWindSpeed):
+def collect_grid_info(LogFilePath,Ly,Lz,dy,dz,Time_End,TimeStep,RefWindSpeed,Log):
     
-    Lx = RefWindSpeed * Time[-1]
+    Lx = RefWindSpeed * Time_End
     dx = RefWindSpeed * TimeStep
-    num_x = int(Time[-1]/TimeStep)
-    num_y = int(Ly/dy)
-    num_z = int(Lz/dz)
+    num_x = int(Time_End/TimeStep)+1
+    num_y = int(Ly/dy)+1
+    num_z = int(Lz/dz)+1
     
     grid_properties = [dx,dy,dz,num_x,num_y,num_z]
     
-    
-    with open(LogFilePath, 'a') as the_file:
-            the_file.write('  \n')
-            the_file.write(' ---------------------------- \n')
-            the_file.write(' WIND GRID INFORMATION\n')
-            the_file.write(' ---------------------------- \n')
-            the_file.write(' Domain size in x: ' + str(Lx) +' m\n')
-            the_file.write(' Domain size in y: ' + str(Ly) +' m\n')
-            the_file.write(' Domain size in z: ' + str(Lz) +' m\n')
-            the_file.write(' Spacing in x: ' + str(dx) +' m\n')
-            the_file.write(' Spacing in y: ' + str(dy) +' m\n')
-            the_file.write(' Spacing in z: ' + str(dz) +' m\n')
-    
+    if (Log == "LOG"):
+        with open(LogFilePath, 'a') as the_file:
+                the_file.write('  \n')
+                the_file.write(' ---------------------------- \n')
+                the_file.write(' WIND GRID INFORMATION\n')
+                the_file.write(' ---------------------------- \n')
+                the_file.write(' Domain size in x: ' + str(Lx) +' m\n')
+                the_file.write(' Domain size in y: ' + str(Ly) +' m\n')
+                the_file.write(' Domain size in z: ' + str(Lz) +' m\n')
+                the_file.write(' Spacing in x: ' + str(dx) +' m\n')
+                the_file.write(' Spacing in y: ' + str(dy) +' m\n')
+                the_file.write(' Spacing in z: ' + str(dz) +' m\n')
+                the_file.write(' Grid points in x: ' + str(num_x) +'\n')
+                the_file.write(' Grid points in y: ' + str(num_y) +'\n')
+                the_file.write(' Grid points in z: ' + str(num_z) +'\n')
+                
     return grid_properties
 
 
@@ -82,7 +85,7 @@ def generate_uniform_bladed_wind(LogFilePath,OutName,grid_properties,Vel_x,Vel_y
     grid_z = struct.pack('f', dz)
     grid_y = struct.pack('f', dy)
     grid_x = struct.pack('f', dx)
-    half_n_gridx = struct.pack('i', int(num_x*0.5)) 
+    half_n_gridx = struct.pack('i', int((num_x-1)*0.5)) 
     meanwind = struct.pack('f', WindSpeedRef)
     meanwind = struct.pack('f', WindSpeedRef)
     LScale_uz = struct.pack('f', 10000) # Length scale, fill by any number
@@ -138,33 +141,21 @@ def generate_uniform_bladed_wind(LogFilePath,OutName,grid_properties,Vel_x,Vel_y
     ################# set the actual data ######################
     
 
-                    
-                    
-    endloop = num_x + 1
-    for i in range(0,endloop):
-        # print ( "idx: " + str(i))
-    
-        u_t_i = (Vel_x[i]-WindSpeedRef)/WindSpeedRef*1000 # bladed uses integer time 1000 of the float
-        v_t_i = Vel_y[i]/WindSpeedRef*1000 # bladed uses integer time 1000 of the float
-        w_t_i = Vel_z[i]/WindSpeedRef*1000 # bladed uses integer time 1000 of the float
-        
-        # print(u_t_i)
-        for k in range(0,num_z): 
-            
-            u_array_t_i_per_row = u_t_i*np.ones(num_y)
-            v_array_t_i_per_row = v_t_i*np.ones(num_y)
-            w_array_t_i_per_row = w_t_i*np.ones(num_y)
 
-            vel_array_t_i_per_row = windlistarange(u_array_t_i_per_row,v_array_t_i_per_row,w_array_t_i_per_row)
-            vel_array_t_i_per_row = np.array(vel_array_t_i_per_row)
-            vel_array_t_i_per_row = vel_array_t_i_per_row.astype('int')
-           
-            
-            for n in range(0,len(vel_array_t_i_per_row)):
-                
-                velfield = struct.pack('h', vel_array_t_i_per_row[n])
-                outputfile.write(velfield)
-     
+    for i in range(0,num_x):
+            for k in range(0,num_z): 
+                    u_array_t_i_per_row = (Vel_x[i,:,k]-WindSpeedRef)/WindSpeedRef*1000 # bladed uses integer time 1000 of the float
+                    v_array_t_i_per_row = Vel_y[i,:,k]/WindSpeedRef*1000 # bladed uses integer time 1000 of the float
+                    w_array_t_i_per_row = Vel_z[i,:,k]/WindSpeedRef*1000 # bladed uses integer time 1000 of the float
+        
+                    vel_array_t_i_per_row = windlistarange(u_array_t_i_per_row,v_array_t_i_per_row,w_array_t_i_per_row)
+                    vel_array_t_i_per_row = np.array(vel_array_t_i_per_row)
+                    vel_array_t_i_per_row = vel_array_t_i_per_row.astype('int')
+                   
+                    for n in range(0,len(vel_array_t_i_per_row)):
+                        velfield = struct.pack('h', vel_array_t_i_per_row[n])
+                        outputfile.write(velfield)
+             
     outputfile.close()
     
     

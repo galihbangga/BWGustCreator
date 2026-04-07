@@ -46,7 +46,7 @@ def fill_the_gust_area_function(GustSpeedStartTime,GustSpeedEndTime,GustDirStart
     return y_func,x_fill_1,x_fill_2
     
 
-def plot_wind_signal(Output_Directory_Path,Time,Speed,Direction,Vel_x,Vel_y,GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime):
+def plot_wind_signal(Output_Directory_Path,FigureName,Time,Speed,Direction,Vel_x,Vel_y,GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime):
 
     plt.figure(figsize=(2*7, 3*3))
     
@@ -104,4 +104,4 @@ def plot_wind_signal(Output_Directory_Path,Time,Speed,Direction,Vel_x,Vel_y,Gust
     
     
     
-    plt.savefig(os.path.join(Output_Directory_Path,"Wind_Signal.png"), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(Output_Directory_Path,FigureName), dpi=300, bbox_inches='tight')

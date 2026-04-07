@@ -44,12 +44,11 @@ def create_wind_file(TimeStep,TimeEnd,TimeSmooth,
     Output_Directory_Path,LogFilePath = organizer.create_output_directory()
     
     # Create gust timeseries
-    Time,Speed,Direction,Vel_x,Vel_y,Vel_z = gust_creator.gust_with_wind_direction(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                                  GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
-                                 GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude)
+                                 GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,Ly,Lz,dy,dz)
     
     # Generate Bladed wind formatted data
-    grid_properties = wind_file_creator.collect_grid_info(LogFilePath,Ly,Lz,dy,dz,Time,TimeStep,GustSpeedStart)
     wind_file_creator.generate_uniform_bladed_wind(LogFilePath,OutName,grid_properties,Vel_x,Vel_y,Vel_z,GustSpeedStart)
 
     # Calculate information about turbulent buffer time
