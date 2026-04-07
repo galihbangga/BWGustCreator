@@ -19,23 +19,16 @@ from . import wind_file_creator
 from . import gust_creator
 from . import wind_shift
 
+# Splash screen
+message.splash_start()
+
 ###########################################################################
 # 
 ###########################################################################
     
 
-def create_wind_file(TimeStep,TimeEnd,TimeSmooth,
-                   GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
-                   GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
-                   Ly,Lz,dy,dz,
-                   OutName,
-                   TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart):
+def directory_preparation():
     
-    
-    
-    # Splash screen
-    message.splash_start()
-
 
     # Log start run time
     start_execution_time = datetime.now()    
@@ -43,11 +36,38 @@ def create_wind_file(TimeStep,TimeEnd,TimeSmooth,
     # Creating output directory to store the results
     Output_Directory_Path,LogFilePath = organizer.create_output_directory()
     
+    return Output_Directory_Path,LogFilePath,start_execution_time
+    
+ 
+def  create_gust_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+                             GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
+                             GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,Ly,Lz,dy,dz):     
+    
+
     # Create gust timeseries
     Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                                  GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
                                  GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,Ly,Lz,dy,dz)
     
+    return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties
+ 
+def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+                             Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DRadius,Gust2DEccentricity,
+                             Ly,Lz,dy,dz):   
+    
+    # Create gust timeseries
+    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+                                 Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DRadius,Gust2DEccentricity,
+                                 Ly,Lz,dy,dz)
+    
+    return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties 
+   
+def  generate_wind_file(LogFilePath,Output_Directory_Path,OutName,
+                        Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties,
+                        GustSpeedStart,
+                        TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart,
+                        start_execution_time):
+     
     # Generate Bladed wind formatted data
     wind_file_creator.generate_uniform_bladed_wind(LogFilePath,OutName,grid_properties,Vel_x,Vel_y,Vel_z,GustSpeedStart)
 

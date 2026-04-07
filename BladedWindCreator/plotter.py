@@ -29,10 +29,14 @@ def calculate_y_limit(Variable,RatioAdd):
     
     val_min = np.min(Variable)
     val_max = np.max(Variable)
-    
-    lim1 = val_min - RatioAdd*(val_max-val_min)
-    lim2 = val_max + RatioAdd*(val_max-val_min)
-    
+
+    if (val_min != val_max):
+        lim1 = val_min - RatioAdd*(val_max-val_min)
+        lim2 = val_max + RatioAdd*(val_max-val_min)
+    else:
+        lim1 = val_min - RatioAdd
+        lim2 = val_max + RatioAdd
+        
     return lim1,lim2
     
     
