@@ -260,6 +260,7 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
         
 def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                              GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+                             GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                              Ly,Lz,dy,dz):
     '''
     Build a 2-dimensional gust, i.e. a localised velocity excess with a radial
@@ -280,6 +281,11 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     GustCenter_Z          : vertical offset [m] of the gust center from the grid center
     HubHeight             : hub height [m], used to reference the grid to absolute height
     NominalRotorDiameter  : rotor diameter [m], drawn as a reference circle in the contour plot
+    GustTypeDir           : gust shape for wind direction ("HALF" or "IEC")
+    GustDirStartTime      : start time [s] of the wind direction gust
+    GustDirEndTime        : end time [s] of the wind direction gust
+    GustDirStart          : baseline wind direction [deg]
+    GustDirAmplitude      : wind direction gust amplitude [deg]
     Ly, Lz                : lateral and vertical extent [m] of the wind grid
     dy, dz                : lateral and vertical grid spacing [m]
 
@@ -316,7 +322,7 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
         raise Exception("For 2D gust option smoothting time shall be smaller than start time for gust")  
 
     print(" Creating gust scaling response in time for wind speed.")               
-    Gust_Function = ()
+    Gust_Function = np.zeros(len(Time))
     for i in range(0,len(Time)):
         if (Time[i] < (GustSpeedStartTime - TimeSmooth)):
             Gust_Function_i = 0
@@ -328,7 +334,11 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             Gust_Function_i = 1 + (Time[i]-GustSpeedEndTime)/TimeSmooth*(0-1)
         if (Time[i] >= (GustSpeedEndTime + TimeSmooth)):
             Gust_Function_i = 0
-        Gust_Function = np.append(Gust_Function,Gust_Function_i)
+        Gust_Function[i] = Gust_Function_i
+
+    print(" Creating gust response for wind direction.")
+    Direction = gust_creator(Time,GustDirStart,GustDirAmplitude,GustDirStartTime,GustDirEndTime,GustTypeDir)
+    Direction_Radians = Direction*np.pi/180
       
     
     uniform_wind_x = GustSpeedStart*np.ones(len(Time))
@@ -343,8 +353,9 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             y_loc = (j - ctr_j) * dy - GustCenter_Y
             z_loc = (k - ctr_k) * dz - GustCenter_Z
             Radius_Loc = np.sqrt(y_loc**2 + z_loc**2)
-            u_array[:,j,k] = uniform_wind_x + Gust_Function * 5/2 * ( 1 + np.tanh(-2*np.pi*( 2 * Radius_Loc * GustEccentricity - 1 )) )
-            v_array[:,j,k] = uniform_wind_y
+            Local_Speed = uniform_wind_x + Gust_Function * 5/2 * ( 1 + np.tanh(-2*np.pi*( 2 * Radius_Loc * GustEccentricity - 1 )) )
+            u_array[:,j,k] = Local_Speed * np.cos(Direction_Radians)
+            v_array[:,j,k] = Local_Speed * np.sin(Direction_Radians)
             w_array[:,j,k] = uniform_wind_z
             Speed_array[:,j,k] = np.sqrt(u_array[:,j,k]**2 + v_array[:,j,k]**2 + w_array[:,j,k]**2)
             Direction_array[:,j,k] = np.arctan2(v_array[:,j,k],u_array[:,j,k]) * 180 / np.pi
@@ -360,7 +371,7 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     VelX_Plot = u_array[:,idx_j,idx_k]
     VelY_Plot = v_array[:,idx_j,idx_k]
     plotter.plot_wind_signal(Output_Directory_Path,FigureName,Time,Speed_Plot,Direction_Plot,VelX_Plot,VelY_Plot,
-                            GustSpeedStartTime,GustSpeedEndTime,GustSpeedStartTime,GustSpeedEndTime)
+                            GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime)
     
     
     # Plot results
@@ -372,7 +383,7 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     VelX_Plot = u_array[:,idx_j,idx_k]
     VelY_Plot = v_array[:,idx_j,idx_k]
     plotter.plot_wind_signal(Output_Directory_Path,FigureName,Time,Speed_Plot,Direction_Plot,VelX_Plot,VelY_Plot,
-                            GustSpeedStartTime,GustSpeedEndTime,GustSpeedStartTime,GustSpeedEndTime) 
+                            GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime) 
     
     
     # Plot results
@@ -384,18 +395,63 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     VelX_Plot = u_array[:,idx_j,idx_k]
     VelY_Plot = v_array[:,idx_j,idx_k]
     plotter.plot_wind_signal(Output_Directory_Path,FigureName,Time,Speed_Plot,Direction_Plot,VelX_Plot,VelY_Plot,
-                            GustSpeedStartTime,GustSpeedEndTime,GustSpeedStartTime,GustSpeedEndTime) 
+                            GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime) 
         
     
+    print(" Plot 2D contour of the wind field at the gust start time.")
+    Y_grid = (np.arange(num_y) - ctr_j) * dy
+    Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
+    TimeInstance = GustSpeedStartTime + 0.0*(GustSpeedEndTime - GustSpeedStartTime)
+    ContourLimit = max(np.max(np.abs(u_array)), np.max(np.abs(v_array)), 1.0)
+    ContourLimits = (-ContourLimit, ContourLimit)
+    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D_Start.png",Time,Y_grid,Z_grid,
+                                 np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
+                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5,
+                                 ColorLimits=ContourLimits)
     
+    
+    print(" Plot 2D contour of the wind field at the gust quarter time.")
+    Y_grid = (np.arange(num_y) - ctr_j) * dy
+    Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
+    TimeInstance = GustSpeedStartTime + 0.25*(GustSpeedEndTime - GustSpeedStartTime)
+    ContourLimit = max(np.max(np.abs(u_array)), np.max(np.abs(v_array)), 1.0)
+    ContourLimits = (-ContourLimit, ContourLimit)
+    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D_Quarter.png",Time,Y_grid,Z_grid,
+                                 np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
+                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5,
+                                 ColorLimits=ContourLimits)    
+    
+        
     print(" Plot 2D contour of the wind field at the gust mid time.")
     Y_grid = (np.arange(num_y) - ctr_j) * dy
     Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
     TimeInstance = 0.5*(GustSpeedStartTime + GustSpeedEndTime)
-    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D.png",Time,Y_grid,Z_grid,
+    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D_Mid.png",Time,Y_grid,Z_grid,
                                  np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
-                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5)
+                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5,
+                                 ColorLimits=ContourLimits)
 
+
+    print(" Plot 2D contour of the wind field at the gust three-quarter time.")
+    Y_grid = (np.arange(num_y) - ctr_j) * dy
+    Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
+    TimeInstance = GustSpeedStartTime + 0.75*(GustSpeedEndTime - GustSpeedStartTime)
+    ContourLimit = max(np.max(np.abs(u_array)), np.max(np.abs(v_array)), 1.0)
+    ContourLimits = (-ContourLimit, ContourLimit)
+    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D_ThreeQuarter.png",Time,Y_grid,Z_grid,
+                                 np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
+                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5,
+                                 ColorLimits=ContourLimits) 
+
+
+    print(" Plot 2D contour of the wind field at the gust end time.")
+    Y_grid = (np.arange(num_y) - ctr_j) * dy
+    Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
+    TimeInstance = GustSpeedStartTime + 1.0*(GustSpeedEndTime - GustSpeedStartTime)
+    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D_End.png",Time,Y_grid,Z_grid,
+                                 np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
+                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5,
+                                 ColorLimits=ContourLimits)
     
     
     with open(LogFilePath, 'a') as the_file:
@@ -415,5 +471,11 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             the_file.write(' Gust eccentricity: ' + str(GustEccentricity) +' \n')
             the_file.write(' Gust center Y: ' + str(GustCenter_Y) +' \n')
             the_file.write(' Gust center Z: ' + str(GustCenter_Z) +' \n')
+            the_file.write(' \n')
+            the_file.write(' Gust type wind direction: ' + str(GustTypeDir) +'\n')
+            the_file.write(' Gust start time wind direction: ' + str(GustDirStartTime) +' s\n')
+            the_file.write(' Gust end time wind direction: ' + str(GustDirEndTime) +' s\n')
+            the_file.write(' Gust start magnitude wind direction: ' + str(GustDirStart) +' deg\n')
+            the_file.write(' Gust amplitude wind direction: ' + str(GustDirAmplitude) +' deg\n')
  
     return Time,Speed_array,Direction_array,u_array,v_array,w_array,grid_properties
