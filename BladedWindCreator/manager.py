@@ -93,6 +93,7 @@ def  create_gust_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
  
 def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                              Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+                             GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                              Ly,Lz,dy,dz):   
     '''
     Wrapper creating a 2-dimensional gust, i.e. a localised velocity excess with a
@@ -112,6 +113,11 @@ def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     GustCenter_Z          : vertical offset [m] of the gust center from the grid center
     HubHeight             : hub height [m], used to reference the grid to absolute height
     NominalRotorDiameter  : rotor diameter [m], drawn as a reference circle in the contour plot
+    GustTypeDir            : gust shape for wind direction ("HALF" or "IEC")
+    GustDirStartTime       : start time [s] of the wind direction gust
+    GustDirEndTime         : end time [s] of the wind direction gust
+    GustDirStart           : baseline wind direction [deg]
+    GustDirAmplitude       : wind direction gust amplitude [deg]
     Ly, Lz                : lateral and vertical extent [m] of the wind grid
     dy, dz                : lateral and vertical grid spacing [m]
 
@@ -128,6 +134,7 @@ def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     # Create gust timeseries
     Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                                  Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+                                 GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                                  Ly,Lz,dy,dz)
     
     return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties 

@@ -152,7 +152,8 @@ def plot_wind_signal(Output_Directory_Path,FigureName,Time,Speed,Direction,Vel_x
 
 
 def plot_wind_contour_2d(Output_Directory_Path,FigureName,Time,Y,Z,Field_x,Field_y,TimeInstance,
-                         Labels=(r'$v_x$ [m/s]',r'$v_y$ [m/s]'),NumLevels=41,HubHeight=None,Radius=None):
+                         Labels=(r'$v_x$ [m/s]',r'$v_y$ [m/s]'),NumLevels=41,HubHeight=None,Radius=None,
+                         ColorLimits=None):
     '''
     Plot 2D contour of the wind field at a desired time instance.
 
@@ -164,6 +165,7 @@ def plot_wind_contour_2d(Output_Directory_Path,FigureName,Time,Y,Z,Field_x,Field
     TimeInstance: desired time [s]; nearest available time step is used
     HubHeight   : optional hub height [m], drawn as a reference line and rotor center
     Radius      : optional rotor radius [m], drawn as a circle centered at (0,HubHeight)
+    ColorLimits : optional shared (minimum, maximum) color scale for all fields
     '''
 
     Time = np.asarray(Time)
@@ -181,9 +183,12 @@ def plot_wind_contour_2d(Output_Directory_Path,FigureName,Time,Y,Z,Field_x,Field
     for i, (Variable, LabelText) in enumerate(zip(Fields, Labels)):
         ax = axes[0, i]
 
-        v_min, v_max = np.min(Variable), np.max(Variable)
-        if v_min == v_max:
-            v_min, v_max = v_min - 1.0, v_max + 1.0
+        if ColorLimits is None:
+            v_min, v_max = np.min(Variable), np.max(Variable)
+            if v_min == v_max:
+                v_min, v_max = v_min - 1.0, v_max + 1.0
+        else:
+            v_min, v_max = ColorLimits
         levels = np.linspace(v_min, v_max, NumLevels)
 
         cf = ax.contourf(Yg, Zg, Variable, levels=levels, cmap='jet', extend='both')

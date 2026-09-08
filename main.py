@@ -117,6 +117,13 @@ HubHeight = 170 # Set this value as the location of wind file center in Bladed s
 # GustCenter_Y = 0 # in m, measured from center of grid
 # GustCenter_Z = 0 # in m, measured from center of grid
 
+# # Gust definition for wind direction
+# GustTypeDir = 'IEC'
+# GustDirStartTime = 200 # in s
+# GustDirEndTime = 240 # in s
+# GustDirStart = 0 # in degrees
+# GustDirAmplitude = 10 # in degrees
+
 # # Wind grid information
 # Ly = 400 # lateral domain size in m
 # Lz = 400 # vertical domain size in m
@@ -131,8 +138,10 @@ HubHeight = 170 # Set this value as the location of wind file center in Bladed s
 # # Code calls
 
 # Output_Directory_Path,LogFilePath,start_execution_time = BladedWindCreator.manager.directory_preparation()
+# Output_Directory_Path,LogFilePath,start_execution_time = BladedWindCreator.manager.directory_preparation()
 # Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = BladedWindCreator.manager.create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
 #                               Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+#                               GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
 #                               Ly,Lz,dy,dz)
 # BladedWindCreator.manager.generate_wind_file(LogFilePath,Output_Directory_Path,OutName,
 #                         Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties,
@@ -171,6 +180,13 @@ Gust2DEccentricity = 3/430 # scale
 GustCenter_Y = 0 # in m, measured from center of grid
 GustCenter_Z = (90-HubHeight) 
 
+# Gust definition for wind direction
+GustTypeDir = "HALF"
+GustDirStartTime = 200 # in s
+GustDirEndTime = 220 # in s
+GustDirStart = 0 # in deg
+GustDirAmplitude = 90 # in deg
+
 # Wind grid information
 Ly = 400 # lateral domain size in m
 Lz = 400 # vertical domain size in m
@@ -187,6 +203,7 @@ OutName = "Wind_2DGust_InCoherent.wnd"
 Output_Directory_Path,LogFilePath,start_execution_time = BladedWindCreator.manager.directory_preparation()
 Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = BladedWindCreator.manager.create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                               Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+                              GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                               Ly,Lz,dy,dz)
 BladedWindCreator.manager.generate_wind_file(LogFilePath,Output_Directory_Path,OutName,
                         Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties,
