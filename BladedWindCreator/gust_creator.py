@@ -162,6 +162,8 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     VelY_Plot = v_array[:,idx_j,idx_k]
     plotter.plot_wind_signal(Output_Directory_Path,FigureName,Time_Smoothed,Speed_Plot,Direction_Plot,VelX_Plot,VelY_Plot,
                             GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime) 
+
+
         
     
     with open(LogFilePath, 'a') as the_file:
@@ -196,7 +198,7 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
         
         
 def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
-                             GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustEccentricity,GustCenter_Y,GustCenter_Z,
+                             GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
                              Ly,Lz,dy,dz):
     
     
@@ -243,12 +245,12 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     uniform_wind_z = 0*np.ones(len(Time))
      
     print(" Creating gust scaling response in space for wind speed.")  
-    ctr_idx_j = int(0.5*num_y)
-    ctr_idx_k = int(0.5*num_z)
+    ctr_j = 0.5*(num_y-1)
+    ctr_k = 0.5*(num_z-1)
     for k in range(0,num_z): 
         for j in range(0,num_y): 
-            y_loc = (j - ctr_idx_j) * dy - GustCenter_Y
-            z_loc = (k - ctr_idx_k) * dz - GustCenter_Z
+            y_loc = (j - ctr_j) * dy - GustCenter_Y
+            z_loc = (k - ctr_k) * dz - GustCenter_Z
             Radius_Loc = np.sqrt(y_loc**2 + z_loc**2)
             u_array[:,j,k] = uniform_wind_x + Gust_Function * 5/2 * ( 1 + np.tanh(-2*np.pi*( 2 * Radius_Loc * GustEccentricity - 1 )) )
             v_array[:,j,k] = uniform_wind_y
@@ -294,6 +296,17 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
                             GustSpeedStartTime,GustSpeedEndTime,GustSpeedStartTime,GustSpeedEndTime) 
         
     
+    
+    print(" Plot 2D contour of the wind field at the gust peak time.")
+    Y_grid = (np.arange(num_y) - ctr_j) * dy
+    Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
+    TimeInstance = 0.5*(GustSpeedStartTime + GustSpeedEndTime)
+    plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D.png",Time,Y_grid,Z_grid,
+                                 np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
+                                 HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5)
+
+    
+    
     with open(LogFilePath, 'a') as the_file:
             the_file.write('  \n')
             the_file.write(' ---------------------------- \n')
@@ -313,4 +326,3 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             the_file.write(' Gust center Z: ' + str(GustCenter_Z) +' \n')
  
     return Time,Speed_array,Direction_array,u_array,v_array,w_array,grid_properties
-        
