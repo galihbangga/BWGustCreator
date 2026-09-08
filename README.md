@@ -16,9 +16,8 @@ Both layouts generate the velocity components `vx`, `vy`, and `vz`, as well as w
 The implemented gust shapes are:
 
 - `HALF`: rises to the specified amplitude and remains at the elevated level after the end time.
+- `FULL`: rises to the specified amplitude and returns to the baseline at the end time.
 - `IEC`: IEC extreme operating gust shape that returns to the baseline after the gust interval.
-
-`FULL` is not currently implemented in `gust_creator.py`, despite being mentioned in an older error message.
 
 ## Requirements
 
@@ -40,9 +39,7 @@ The example inputs and execution flow are in [`main.py`](main.py). Edit the acti
 python main.py
 ```
 
-The active example creates a localized 2D gust. The commented sections in `main.py` contain example setups for a 1D gust and a coherent 2D gust.
-
-The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file. Existing output folders in this repository include [`Output`](Output), [`Output_Coherent`](Output_Coherent), and [`Output_InCoherent`](Output_InCoherent).
+The active example creates a localized 2D gust. The commented sections in `main.py` contain example setups for a 1D gust and a coherent 2D gust. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
 
 ## 1D Gust Inputs
 
@@ -53,12 +50,12 @@ The 1D workflow is called through `manager.create_gust_1D()` and uses these inpu
 | `TimeEnd` | Duration of the primary wind signal in seconds. |
 | `TimeStep` | Wind-file time step in seconds. |
 | `TimeSmooth` | Additional linear ramp duration used to return the velocity to its initial value. |
-| `GustTypeSpeed` | Speed gust shape: `HALF` or `IEC`. |
+| `GustTypeSpeed` | Speed gust shape: `HALF`, `FULL`, or `IEC`. |
 | `GustSpeedStartTime` | Speed gust start time in seconds. |
 | `GustSpeedEndTime` | Speed gust end time in seconds. |
 | `GustSpeedStart` | Baseline wind speed in m/s. |
 | `GustSpeedAmplitude` | Speed gust amplitude in m/s. |
-| `GustTypeDir` | Direction gust shape: `HALF` or `IEC`. |
+| `GustTypeDir` | Direction gust shape: `HALF`, `FULL`, or `IEC`. |
 | `GustDirStartTime` | Direction gust start time in seconds. |
 | `GustDirEndTime` | Direction gust end time in seconds. |
 | `GustDirStart` | Baseline wind direction in degrees. |
@@ -108,16 +105,6 @@ Depending on the selected workflow, the output directory contains:
 - `WindFileCreatorLog.dat`, containing grid, turbine, and gust parameters.
 - Three wind-signal plots at representative grid locations.
 - For 2D gusts, start, midpoint, and end contour plots for `vx` and `vy` using a consistent color scale.
-
-## Project Layout
-
-| Path | Purpose |
-| --- | --- |
-| [`main.py`](main.py) | Example inputs and executable workflow. |
-| [`BladedWindCreator/gust_creator.py`](BladedWindCreator/gust_creator.py) | Gust generation and spatial expansion. |
-| [`BladedWindCreator/manager.py`](BladedWindCreator/manager.py) | Public workflow wrappers and wind-file orchestration. |
-| [`BladedWindCreator/plotter.py`](BladedWindCreator/plotter.py) | Diagnostic signal and contour plots. |
-| [`BladedWindCreator/wind_file_creator.py`](BladedWindCreator/wind_file_creator.py) | Bladed wind-grid and binary file creation. |
 
 ## Contributing and Bugs
 

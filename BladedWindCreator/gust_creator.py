@@ -51,6 +51,9 @@ def gust_creator(Time,Mean,Amplitude,Start,End,Type):
         Actuation[i_actuated] = 0.5*Amplitude*(1 - np.cos(2*np.pi*(t_actuated-Start)/Tc))
         i_actuated_greater_rest = np.where(Time > End)
         Actuation[i_actuated_greater_rest] =  0.5*Amplitude*(1 - np.cos(2*np.pi*(End-Start)/Tc))
+    elif (Type == "FULL"):
+        Tc = (End-Start)
+        Actuation[i_actuated] = 0.5*Amplitude*(1 - np.cos(2*np.pi*(t_actuated-Start)/Tc))
     elif (Type == "IEC"):
         Tc = End-Start
         Actuation[i_actuated] = -0.37*Amplitude* np.sin(3*np.pi*(t_actuated-Start)/Tc)*(1 - np.cos(2*np.pi*(t_actuated-Start)/Tc))
