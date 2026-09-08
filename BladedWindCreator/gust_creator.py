@@ -23,7 +23,22 @@ from . import wind_file_creator
 
     
 def gust_creator(Time,Mean,Amplitude,Start,End,Type):
-    
+    '''
+    Create a 1D gust time series superimposed on a constant mean value.
+
+    Time      : 1D array of time [s], size (nt,)
+    Mean      : baseline (constant) value of the signal, e.g. wind speed [m/s] or direction [deg]
+    Amplitude : gust amplitude, in the same unit as Mean
+    Start     : gust start time [s]
+    End       : gust end time [s]
+    Type      : gust shape, either
+                "HALF" - half cosine rise that stays at the elevated level after End
+                "IEC"  - IEC extreme operating gust (returns to the mean after End)
+
+    Returns
+    Gust      : 1D array of Mean + gust actuation, size (nt,)
+    '''
+
     Actuation = np.zeros(len(Time))
     i_actuated_greater = np.where(Time >= Start)
     i_actuated_smaller = np.where(Time <= End)
@@ -51,7 +66,20 @@ def gust_creator(Time,Mean,Amplitude,Start,End,Type):
 
 
 def adding_linear_smooth_time(Time,TimeSmooth,TimeStep,ValueBaseline):
-    
+    '''
+    Append a linear ramp at the end of a signal so that the final value
+    returns to the initial value of the signal (periodicity for the wind file).
+
+    Time          : 1D array of time [s], size (nt,)
+    TimeSmooth    : duration [s] of the appended smoothing ramp. If 0, nothing is added.
+    TimeStep      : time step [s] used to build the appended time samples
+    ValueBaseline : 1D array of the signal to be smoothed, size (nt,)
+
+    Returns
+    Time_Total  : extended time array [s]
+    Value_Total : extended signal array, ending at ValueBaseline[0]
+    '''
+
     if (TimeSmooth > 0):
     
         Time_Smooth = np.arange(Time[-1]+TimeStep,Time[-1]+TimeSmooth+TimeStep,TimeStep)
@@ -69,10 +97,43 @@ def adding_linear_smooth_time(Time,TimeSmooth,TimeStep,ValueBaseline):
     
     return Time_Total,Value_Total
 
+
+
 def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                              GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
                              GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,Ly,Lz,dy,dz):
-    
+    '''
+    Build a 1-dimensional (uniform over the grid plane) gust in both wind speed and
+    wind direction, expand it over the 3D wind grid and generate the diagnostic plots.
+
+    LogFilePath           : path of the log file, appended with the gust information
+    Output_Directory_Path : directory where the figures are saved
+    TimeStep              : time step [s] of the wind file
+    TimeEnd               : target end time [s] of the gust signal, before smoothing
+    TimeSmooth            : duration [s] of the linear ramp appended after TimeEnd
+    GustTypeSpeed         : gust shape for wind speed ("HALF" or "IEC")
+    GustSpeedStartTime    : start time [s] of the wind speed gust
+    GustSpeedEndTime      : end time [s] of the wind speed gust
+    GustSpeedStart        : baseline wind speed [m/s]
+    GustSpeedAmplitude    : wind speed gust amplitude [m/s]
+    GustTypeDir           : gust shape for wind direction ("HALF" or "IEC")
+    GustDirStartTime      : start time [s] of the wind direction gust
+    GustDirEndTime        : end time [s] of the wind direction gust
+    GustDirStart          : baseline wind direction [deg]
+    GustDirAmplitude      : wind direction gust amplitude [deg]
+    Ly, Lz                : lateral and vertical extent [m] of the wind grid
+    dy, dz                : lateral and vertical grid spacing [m]
+
+    Returns
+    Time_Smoothed   : 1D array of time [s] including the smoothing ramp, size (nt,)
+    Speed_array     : 3D array of wind speed magnitude [m/s], shape (nt, ny, nz)
+    Direction_array : 3D array of wind direction [deg], shape (nt, ny, nz)
+    u_array         : 3D array of longitudinal velocity [m/s], shape (nt, ny, nz)
+    v_array         : 3D array of lateral velocity [m/s], shape (nt, ny, nz)
+    w_array         : 3D array of vertical velocity [m/s], shape (nt, ny, nz)
+    grid_properties : tuple (dx,dy,dz,num_x,num_y,num_z) describing the wind grid
+    '''
+
     print(" One-dimensional gust applied.")  
     
     # Time series allocation
@@ -200,8 +261,38 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
 def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                              GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
                              Ly,Lz,dy,dz):
-    
-    
+    '''
+    Build a 2-dimensional gust, i.e. a localised velocity excess with a radial
+    (tanh) spatial shape in the Y-Z plane and a trapezoidal time evolution.
+
+    LogFilePath           : path of the log file, appended with the gust information
+    Output_Directory_Path : directory where the figures are saved
+    TimeStep              : time step [s] of the wind file
+    TimeEnd               : end time [s] of the wind file
+    TimeSmooth            : ramp-up/ramp-down duration [s] of the gust in time.
+                            Must be smaller than GustSpeedStartTime.
+    GustSpeedStartTime    : time [s] at which the gust reaches its full magnitude
+    GustSpeedEndTime      : time [s] at which the gust starts to decay
+    GustSpeedStart        : baseline (uniform) wind speed [m/s]
+    GustEccentricity      : inverse spatial extent [1/m] of the gust; larger values
+                            give a smaller and sharper gust core
+    GustCenter_Y          : lateral offset [m] of the gust center from the grid center
+    GustCenter_Z          : vertical offset [m] of the gust center from the grid center
+    HubHeight             : hub height [m], used to reference the grid to absolute height
+    NominalRotorDiameter  : rotor diameter [m], drawn as a reference circle in the contour plot
+    Ly, Lz                : lateral and vertical extent [m] of the wind grid
+    dy, dz                : lateral and vertical grid spacing [m]
+
+    Returns
+    Time            : 1D array of time [s], size (nt,)
+    Speed_array     : 3D array of wind speed magnitude [m/s], shape (nt, ny, nz)
+    Direction_array : 3D array of wind direction [deg], shape (nt, ny, nz)
+    u_array         : 3D array of longitudinal velocity [m/s], shape (nt, ny, nz)
+    v_array         : 3D array of lateral velocity [m/s], shape (nt, ny, nz)
+    w_array         : 3D array of vertical velocity [m/s], shape (nt, ny, nz)
+    grid_properties : tuple (dx,dy,dz,num_x,num_y,num_z) describing the wind grid
+    '''
+
     print(" Two-dimensional gust applied.")  
     
     # Time series allocation
@@ -297,7 +388,7 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
         
     
     
-    print(" Plot 2D contour of the wind field at the gust peak time.")
+    print(" Plot 2D contour of the wind field at the gust mid time.")
     Y_grid = (np.arange(num_y) - ctr_j) * dy
     Z_grid = (np.arange(num_z) - ctr_k) * dz + HubHeight
     TimeInstance = 0.5*(GustSpeedStartTime + GustSpeedEndTime)

@@ -20,7 +20,26 @@ import numpy as np
 
 
 def buffer_time(LogFilePath,Time,TowerExtremaLocation,NominalRotorDiameter,Overhang,LateralOffset,Floating,SeaDepth,WindSpeedRef,InitialNacelleAngle,RotorOrientation,OriginOfWindFileStart):
-    
+    '''
+    Compute the start time of the turbulent wind file in Bladed, so that time zero corresponds to to time zero in the wind file.
+
+    LogFilePath           : path of the log file, appended with the buffer time information
+    Time                  : 1D array of time [s] of the generated wind file, size (nt,)
+    TowerExtremaLocation  : most upwind/downwind tower station location [m]
+    NominalRotorDiameter  : rotor diameter [m]
+    Overhang              : distance [m] from the tower axis to the rotor apex
+    LateralOffset         : lateral offset [m] of the rotor from the tower axis
+    Floating              : flag for a floating turbine, either "YES" or "NO"
+    SeaDepth              : water depth [m], only accounted for when Floating is "YES"
+    WindSpeedRef          : reference (mean) wind speed [m/s] used to convert distance to time
+    InitialNacelleAngle   : initial nacelle yaw angle [deg]
+    RotorOrientation      : rotor configuration, either "UPWIND" or "DOWNWIND"
+    OriginOfWindFileStart : reference origin of the wind file, either "GLOBAL" or "HUB"
+
+    Returns
+    turbulent_start_time  : start time [s] to be entered in Bladed for the turbulent wind file
+    '''
+
     print(' Calculating turbulent file buffer time.    ')
     
     if (Floating == "YES"):
@@ -62,4 +81,3 @@ def buffer_time(LogFilePath,Time,TowerExtremaLocation,NominalRotorDiameter,Overh
             the_file.write(' RotorOrientation: ' + str(RotorOrientation) +' \n')
 
 
-    
