@@ -125,7 +125,7 @@ HubHeight = 170 # Set this value as the location of wind file center in Bladed s
 
 
 # # Output name
-# OutName = "Wind_ECG_ECD_Coherennt.wnd"
+# OutName = "Wind_2DGust_Coherent.wnd"
 
 
 # # Code calls
@@ -179,7 +179,7 @@ dz = 5 # vertical grid spacing in m
 
 
 # Output name
-OutName = "Wind_ECG_ECD_InCoherennt.wnd"
+OutName = "Wind_2DGust_InCoherent.wnd"
 
 
 # Code calls
