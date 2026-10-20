@@ -70,35 +70,67 @@ def gust_creator(Time,Mean,Amplitude,Start,End,Type):
 
 def adding_linear_smooth_time(Time,TimeSmooth,TimeStep,ValueBaseline):
     '''
-    Append a linear ramp at the end of a signal so that the final value
-    returns to the initial value of the signal (periodicity for the wind file).
+    Replace the last TimeSmooth seconds of a signal by a linear ramp so that the final
+    value returns to the initial value of the signal (periodicity for the wind file).
+    The signal length is unchanged.
 
     Time          : 1D array of time [s], size (nt,)
-    TimeSmooth    : duration [s] of the appended smoothing ramp. If 0, nothing is added.
-    TimeStep      : time step [s] used to build the appended time samples
+    TimeSmooth    : duration [s] of the smoothing ramp at the end of the signal. If 0, nothing is changed.
+    TimeStep      : time step [s] of the signal
     ValueBaseline : 1D array of the signal to be smoothed, size (nt,)
 
     Returns
-    Time_Total  : extended time array [s]
-    Value_Total : extended signal array, ending at ValueBaseline[0]
+    Time_Total  : time array [s], same as Time
+    Value_Total : signal array, ending at ValueBaseline[0]
     '''
 
+    Time_Total = Time * 1.0
+    Value_Total = ValueBaseline * 1.0
+
     if (TimeSmooth > 0):
-    
-        Time_Smooth = np.arange(Time[-1]+TimeStep,Time[-1]+TimeSmooth+TimeStep,TimeStep)
-        
-        gradient = (ValueBaseline[0]-ValueBaseline[-1])/(Time_Smooth[-1]-Time[-1])
-        
-        ValueSmooth = ValueBaseline[-1] + gradient*(Time_Smooth-Time[-1])
-        
-        Time_Total = np.append(Time,Time_Smooth)
-        Value_Total = np.append(ValueBaseline,ValueSmooth)
-    
-    else:
-        Time_Total = Time * 1.0
-        Value_Total = ValueBaseline * 1.0
+
+        i_start = len(Time) - 1 - int(round(TimeSmooth/TimeStep))
+        if (i_start < 0):
+            raise Exception("Smoothing time shall not be larger than the wind file duration")
+
+        fraction = (Time[i_start:]-Time[i_start])/(Time[-1]-Time[i_start])
+        Value_Total[i_start:] = ValueBaseline[i_start] + (ValueBaseline[0]-ValueBaseline[i_start])*fraction
     
     return Time_Total,Value_Total
+
+
+
+def adding_linear_smooth_time_vector(Time,TimeSmooth,TimeStep,Speed,Direction):
+    '''
+    Smooth the end of a wind vector signal (see adding_linear_smooth_time) given as speed and direction.
+    If the speed at the start of the ramp already equals the initial speed, only the direction is ramped
+    and the speed is kept constant. Otherwise the velocity components are ramped.
+
+    Time          : 1D array of time [s], size (nt,)
+    TimeSmooth    : duration [s] of the smoothing ramp at the end of the signal. If 0, nothing is changed.
+    TimeStep      : time step [s] of the signal
+    Speed         : 1D array of wind speed [m/s], size (nt,)
+    Direction     : 1D array of wind direction [deg], size (nt,)
+
+    Returns
+    Time_Total  : time array [s], same as Time
+    Vel_x       : smoothed longitudinal velocity [m/s], size (nt,)
+    Vel_y       : smoothed lateral velocity [m/s], size (nt,)
+    '''
+
+    Time_Total,Direction_Total = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Direction)
+    i_start = len(Time) - 1 - int(round(TimeSmooth/TimeStep))
+
+    if (TimeSmooth > 0 and np.isclose(Speed[i_start],Speed[0])):
+        Speed_Total = Speed * 1.0
+        Speed_Total[i_start:] = Speed[0]
+        Vel_x = Speed_Total * np.cos(Direction_Total*np.pi/180)
+        Vel_y = Speed_Total * np.sin(Direction_Total*np.pi/180)
+    else:
+        Time_Total,Vel_x = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Speed*np.cos(Direction*np.pi/180))
+        Time_Total,Vel_y = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Speed*np.sin(Direction*np.pi/180))
+
+    return Time_Total,Vel_x,Vel_y
 
 
 
@@ -112,8 +144,8 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     LogFilePath           : path of the log file, appended with the gust information
     Output_Directory_Path : directory where the figures are saved
     TimeStep              : time step [s] of the wind file
-    TimeEnd               : target end time [s] of the gust signal, before smoothing
-    TimeSmooth            : duration [s] of the linear ramp appended after TimeEnd
+    TimeEnd               : end time [s] of the wind file
+    TimeSmooth            : duration [s] of the linear ramp at the end of the wind file (within TimeEnd)
     GustTypeSpeed         : gust shape for wind speed ("HALF" or "IEC")
     GustSpeedStartTime    : start time [s] of the wind speed gust
     GustSpeedEndTime      : end time [s] of the wind speed gust
@@ -128,7 +160,7 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     dy, dz                : lateral and vertical grid spacing [m]
 
     Returns
-    Time_Smoothed   : 1D array of time [s] including the smoothing ramp, size (nt,)
+    Time_Smoothed   : 1D array of time [s], size (nt,)
     Speed_array     : 3D array of wind speed magnitude [m/s], shape (nt, ny, nz)
     Direction_array : 3D array of wind direction [deg], shape (nt, ny, nz)
     u_array         : 3D array of longitudinal velocity [m/s], shape (nt, ny, nz)
@@ -149,16 +181,9 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     Direction = gust_creator(Time,GustDirStart,GustDirAmplitude,GustDirStartTime,GustDirEndTime,GustTypeDir)
     
     
-    print(" Combining wind speed and direction gust responses.")
-    Vel_x = Speed * np.cos(Direction*np.pi/180)
-    Vel_y = Speed * np.sin(Direction*np.pi/180)
-    Vel_z = np.zeros(len(Speed))
-    
-    
     print(" Adding smoothing regime toward the end of wind file.")
-    Time_Smoothed,Vel_x_Smoothed = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Vel_x)
-    Time_Smoothed,Vel_y_Smoothed = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Vel_y)
-    Time_Smoothed,Vel_z_Smoothed = adding_linear_smooth_time(Time,TimeSmooth,TimeStep,Vel_z)
+    Time_Smoothed,Vel_x_Smoothed,Vel_y_Smoothed = adding_linear_smooth_time_vector(Time,TimeSmooth,TimeStep,Speed,Direction)
+    Vel_z_Smoothed = np.zeros(len(Time_Smoothed))
     
     
     print(" Recalculating wind speed and direction due to smoothing effect.")
@@ -236,7 +261,7 @@ def gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             the_file.write(' GUST INFORMATION\n')
             the_file.write(' ---------------------------- \n')
             the_file.write(' Target wind file end time: ' + str(Time[-1]) +' s\n')
-            the_file.write(' Additional smoothing time: ' + str(Time_Smoothed[-1]-Time[-1]) +' s\n')
+            the_file.write(' Smoothing time at end of wind file: ' + str(TimeSmooth) +' s\n')
             the_file.write(' Total resulting end time of wind file: ' + str(Time_Smoothed[-1]) +' s\n')
             the_file.write('  \n')
             the_file.write(' Gust dimensionality type: 1-Dimensional\n')
@@ -273,7 +298,8 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
     Output_Directory_Path : directory where the figures are saved
     TimeStep              : time step [s] of the wind file
     TimeEnd               : end time [s] of the wind file
-    TimeSmooth            : ramp-up/ramp-down duration [s] of the gust in time.
+    TimeSmooth            : ramp-up/ramp-down duration [s] of the gust in time, also the duration [s]
+                            of the linear ramp at the end of the wind file (within TimeEnd).
                             Must be smaller than GustSpeedStartTime.
     GustSpeedStartTime    : time [s] at which the gust reaches its full magnitude
     GustSpeedEndTime      : time [s] at which the gust starts to decay
@@ -341,7 +367,6 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
 
     print(" Creating gust response for wind direction.")
     Direction = gust_creator(Time,GustDirStart,GustDirAmplitude,GustDirStartTime,GustDirEndTime,GustTypeDir)
-    Direction_Radians = Direction*np.pi/180
       
     
     uniform_wind_x = GustSpeedStart*np.ones(len(Time))
@@ -357,8 +382,7 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             z_loc = (k - ctr_k) * dz - GustCenter_Z
             Radius_Loc = np.sqrt(y_loc**2 + z_loc**2)
             Local_Speed = uniform_wind_x + Gust_Function * 5/2 * ( 1 + np.tanh(-2*np.pi*( 2 * Radius_Loc * GustEccentricity - 1 )) )
-            u_array[:,j,k] = Local_Speed * np.cos(Direction_Radians)
-            v_array[:,j,k] = Local_Speed * np.sin(Direction_Radians)
+            Time_Loc,u_array[:,j,k],v_array[:,j,k] = adding_linear_smooth_time_vector(Time,TimeSmooth,TimeStep,Local_Speed,Direction)
             w_array[:,j,k] = uniform_wind_z
             Speed_array[:,j,k] = np.sqrt(u_array[:,j,k]**2 + v_array[:,j,k]**2 + w_array[:,j,k]**2)
             Direction_array[:,j,k] = np.arctan2(v_array[:,j,k],u_array[:,j,k]) * 180 / np.pi
@@ -463,7 +487,7 @@ def gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeE
             the_file.write(' GUST INFORMATION\n')
             the_file.write(' ---------------------------- \n')
             the_file.write(' Target wind file end time: ' + str(Time[-1]) +' s\n')
-            the_file.write(' Additional smoothing time: ' + str(TimeSmooth) +' s\n')
+            the_file.write(' Smoothing time at end of wind file: ' + str(TimeSmooth) +' s\n')
             the_file.write(' Total resulting end time of wind file: ' + str(Time[-1]) +' s\n')
             the_file.write('  \n')
             the_file.write(' Gust dimensionality type: 2-Dimensional\n')

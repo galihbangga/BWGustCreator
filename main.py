@@ -46,7 +46,7 @@ HubHeight = 170 # Set this value as the location of wind file center in Bladed s
 # # Wind duration
 # TimeEnd = 300 # in s
 # TimeStep = 0.1 # in s
-# TimeSmooth = 5 # in s, additional time on top of TimeEnd to smooth the wind speeed back to initial value (avoiding instability)
+# TimeSmooth = 5 # in s, last part of TimeEnd replaced by a linear ramp back to the initial value (avoiding instability)
 
 # # Gust definition for wind speed
 # GustTypeSpeed = 'HALF'
@@ -107,7 +107,7 @@ HubHeight = 170 # Set this value as the location of wind file center in Bladed s
 # # Wind duration
 # TimeEnd = 300 # in s
 # TimeStep = 0.1 # in s
-# TimeSmooth = 5 # in s, additional time on top of TimeEnd to smooth the wind speeed back to initial value (avoiding instability)
+# TimeSmooth = 5 # in s, gust rise/fall time and last part of TimeEnd replaced by a linear ramp back to the initial value (avoiding instability)
 
 # # Gust definition for wind speed
 # Gust2DSpeedStartTime = 200 # in s
@@ -165,12 +165,12 @@ HubHeight = 170 # Set this value as the location of wind file center in Bladed s
 # Wind duration
 TimeEnd = 300 # in s
 TimeStep = 0.1 # in s
-TimeSmooth = 5 # in s, additional time on top of TimeEnd to smooth the wind speeed back to initial value (avoiding instability)
+TimeSmooth = 5 # in s, gust rise/fall time and last part of TimeEnd replaced by a linear ramp back to the initial value (avoiding instability)
 
 # Gust definition for wind speed
-Gust2DSpeedStartTime = 200 # in s
-Gust2DSpeedEndTime = 220 # in s
-Gust2DSpeedStart = 6 # in m/s
+Gust2DSpeedStartTime = 50 # in s
+Gust2DSpeedEndTime = 200 # in s
+Gust2DSpeedStart = 10 # in m/s
 Gust2DEccentricity = 3/430 # scale
 
 # in m, measured from center of grid, 
@@ -182,8 +182,8 @@ GustCenter_Z = (90-HubHeight)
 
 # Gust definition for wind direction
 GustTypeDir = "HALF"
-GustDirStartTime = 200 # in s
-GustDirEndTime = 220 # in s
+GustDirStartTime = 50 # in s
+GustDirEndTime = 200 # in s
 GustDirStart = 0 # in deg
 GustDirAmplitude = 90 # in deg
 
@@ -195,7 +195,7 @@ dz = 5 # vertical grid spacing in m
 
 
 # Output name
-OutName = "Wind_2DGust_InCoherent.wnd"
+OutName = "Wind_2DGust_InCoherent_Spd_Dir_3600s_400x400.wnd"
 
 
 # Code calls
