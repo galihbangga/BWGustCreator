@@ -2,12 +2,13 @@
 
 BWGustCreator generates wind files in the DNV Bladed binary `.wnd` format. It is intended for creating deterministic wind-field test cases with a prescribed gust in wind speed and, optionally, a changing wind direction.
 
-The project currently provides two gust layouts:
+The project currently provides three gust layouts:
 
 - **1D gust**: the same speed and direction time series is applied uniformly over the whole Y-Z grid plane.
-- **2D gust**: a localized radial gust is applied over the Y-Z plane using a tanh-shaped spatial profile. The gust center and spatial extent can be configured.
+- **2D circular gust**: a localized circular gust is applied over the Y-Z plane. The time evolution follows the `HALF`, `FULL`, or `IEC` shape and the spatial profile is smoothed at the gust edge. The gust radius and center can be configured.
+- **2D IEA Wind Task 47 gust**: a localized radial gust is applied over the Y-Z plane using a tanh-shaped spatial profile and a trapezoidal time evolution. The gust center and spatial extent can be configured.
 
-Both layouts generate the velocity components `vx`, `vy`, and `vz`, as well as wind-speed and wind-direction arrays. Diagnostic time-series plots and 2D contour plots are also written for each run.
+All layouts generate the velocity components `vx`, `vy`, and `vz`, as well as wind-speed and wind-direction arrays. Diagnostic time-series plots and 2D contour plots are also written for each run.
 
 > This software is provided without guarantee. Validate generated wind files before using them in production simulations.
 
@@ -39,7 +40,7 @@ The example inputs and execution flow are in [`main.py`](main.py). Edit the para
 python main.py
 ```
 
-`main.py` contains commented example setups for a 1D gust, a circular 2D gust, and coherent and incoherent IEA Wind Task 47 2D gusts. Uncomment one example block to run it. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
+The active example creates a circular 2D gust. The commented sections in `main.py` contain example setups for a 1D gust and for coherent and incoherent IEA Wind Task 47 2D gusts; uncomment one block (and comment out the active one) to run it. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
 
 ## 1D Gust Inputs
 
@@ -49,7 +50,7 @@ The 1D workflow is called through `manager.create_gust_1D()` and uses these inpu
 | --- | --- |
 | `TimeEnd` | Duration of the primary wind signal in seconds. |
 | `TimeStep` | Wind-file time step in seconds. |
-| `TimeSmooth` | Duration at the end of the wind file replaced by a linear ramp back to the initial value. For the 2D gust it is also the linear rise/fall duration of the gust. |
+| `TimeSmooth` | Duration at the end of the wind file replaced by a linear ramp back to the initial value. |
 | `GustTypeSpeed` | Speed gust shape: `HALF`, `FULL`, or `IEC`. |
 | `GustSpeedStartTime` | Speed gust start time in seconds. |
 | `GustSpeedEndTime` | Speed gust end time in seconds. |
@@ -65,20 +66,25 @@ The 1D workflow is called through `manager.create_gust_1D()` and uses these inpu
 
 ## 2D Circular Gust Inputs
 
-The circular 2D workflow is called through `manager.create_gust_2D_circular()`. The gust follows the `HALF`, `FULL`, or `IEC` shape in time and the smoothed radial shape of the 2D gust above in space. It uses the 1D inputs (`TimeEnd`, `TimeStep`, `TimeSmooth`, `GustTypeSpeed`, `GustSpeedStartTime`, `GustSpeedEndTime`, `GustSpeedStart`, `GustSpeedAmplitude`, the direction inputs and the grid inputs), the gust-center, `HubHeight` and `NominalRotorDiameter` inputs of the 2D gust, plus:
+The circular 2D workflow is called through `manager.create_gust_2D_circular()`. The gust follows the `HALF`, `FULL`, or `IEC` shape in time and a smoothed radial shape in space, defined by the gust radius. It uses all 1D inputs, where `GustSpeedAmplitude` is the amplitude at the gust center, plus:
 
 | Parameter | Description |
 | --- | --- |
 | `GustRadius` | Gust radius in meters. The gust amplitude is halved at this distance from the gust center and decays smoothly to zero around it. |
+| `GustCenter_Y` | Gust-center offset from the grid center in the lateral direction, in meters. |
+| `GustCenter_Z` | Gust-center offset from the grid center in the vertical direction, in meters. |
+| `HubHeight` | Hub height used to convert the vertical grid to absolute height. |
+| `NominalRotorDiameter` | Un-coned rotor diameter used for the reference circle in contour plots. |
 
-Here `TimeSmooth` is only the duration at the end of the wind file replaced by a linear ramp back to the initial value.
+The wind direction gust is applied uniformly over the grid, while the speed gust amplitude is scaled in space by the smoothed radial profile.
 
 ## 2D IEA Wind Task 47 Gust Inputs
 
-The 2D workflow is called through `manager.create_gust_2D()`. It uses the same direction inputs as the 1D workflow, plus:
+The IEA Wind Task 47 workflow is called through `manager.create_gust_2D_IEAWind47()`. It uses the 1D inputs `TimeEnd`, `TimeStep`, the direction gust inputs, and the grid inputs. `TimeSmooth` is redefined and the speed gust is defined by the following inputs instead of the 1D speed gust inputs:
 
 | Parameter | Description |
 | --- | --- |
+| `TimeSmooth` | Duration of the linear rise before `Gust2DSpeedStartTime` and of the linear fall after `Gust2DSpeedEndTime` of the speed gust. It is also the duration at the end of the wind file replaced by a linear ramp back to the initial value. Must be smaller than `Gust2DSpeedStartTime`. |
 | `Gust2DSpeedStartTime` | Time at which the localized gust reaches full magnitude. |
 | `Gust2DSpeedEndTime` | Time at which the localized gust starts to decay. |
 | `Gust2DSpeedStart` | Uniform baseline wind speed in m/s. |
@@ -87,8 +93,6 @@ The 2D workflow is called through `manager.create_gust_2D()`. It uses the same d
 | `GustCenter_Z` | Gust-center offset from the grid center in the vertical direction, in meters. |
 | `HubHeight` | Hub height used to convert the vertical grid to absolute height. |
 | `NominalRotorDiameter` | Un-coned rotor diameter used for the reference circle in contour plots. |
-
-For the 2D gust, `TimeSmooth` controls the linear rise and fall around the speed-gust interval and the linear ramp at the end of the wind file, and must be smaller than `Gust2DSpeedStartTime`.
 
 
 ## Wind-File Metadata
