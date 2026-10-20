@@ -144,7 +144,7 @@ def IEAWind_Task47_Model(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,Time
             the_file.write(' Smoothing time at end of wind file: ' + str(TimeSmooth) +' s\n')
             the_file.write(' Total resulting end time of wind file: ' + str(Time[-1]) +' s\n')
             the_file.write('  \n')
-            the_file.write(' Gust dimensionality type: 2-Dimensional\n')
+            the_file.write(' Gust dimensionality type: 2-Dimensional IEA Wind Task 47\n')
             the_file.write('  \n')
             the_file.write(' Gust start time wind speed: ' + str(GustSpeedStartTime) +' s\n')
             the_file.write(' Gust end time wind speed: ' + str(GustSpeedEndTime) +' s\n')    
