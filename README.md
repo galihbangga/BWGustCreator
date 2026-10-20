@@ -33,13 +33,13 @@ pip install numpy matplotlib
 
 ## Running the Example
 
-The example inputs and execution flow are in [`main.py`](main.py). Edit the active parameter block, then run:
+The example inputs and execution flow are in [`main.py`](main.py). Edit the parameter block of one example, then run:
 
 ```bash
 python main.py
 ```
 
-The active example creates a localized 2D gust. The commented sections in `main.py` contain example setups for a 1D gust and a coherent 2D gust. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
+`main.py` contains commented example setups for a 1D gust, a circular 2D gust, and coherent and incoherent IEA Wind Task 47 2D gusts. Uncomment one example block to run it. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
 
 ## 1D Gust Inputs
 
@@ -79,6 +79,16 @@ The 2D workflow is called through `manager.create_gust_2D()`. It uses the same d
 | `NominalRotorDiameter` | Un-coned rotor diameter used for the reference circle in contour plots. |
 
 For the 2D gust, `TimeSmooth` controls the linear rise and fall around the speed-gust interval and the linear ramp at the end of the wind file, and must be smaller than `Gust2DSpeedStartTime`.
+
+## 2D Circular Gust Inputs
+
+The circular 2D workflow is called through `manager.create_gust_2D_circular()`. The gust follows the `HALF`, `FULL`, or `IEC` shape in time and the smoothed radial shape of the 2D gust above in space. It uses the 1D inputs (`TimeEnd`, `TimeStep`, `TimeSmooth`, `GustTypeSpeed`, `GustSpeedStartTime`, `GustSpeedEndTime`, `GustSpeedStart`, `GustSpeedAmplitude`, the direction inputs and the grid inputs), the gust-center, `HubHeight` and `NominalRotorDiameter` inputs of the 2D gust, plus:
+
+| Parameter | Description |
+| --- | --- |
+| `GustRadius` | Gust radius in metres. The gust amplitude is halved at this distance from the gust center and decays smoothly to zero around it. |
+
+Here `TimeSmooth` is only the duration at the end of the wind file replaced by a linear ramp back to the initial value.
 
 ## Wind-File Metadata
 
