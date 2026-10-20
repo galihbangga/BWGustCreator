@@ -16,7 +16,7 @@ from datetime import datetime
 from . import organizer
 from . import message
 from . import wind_file_creator
-from . import gust_creator
+from . import GustDefiniton
 from . import wind_shift
 
 # Splash screen
@@ -85,19 +85,19 @@ def  create_gust_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     '''
 
     # Create gust timeseries
-    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = GustDefiniton.gust_1D.gust_with_wind_direction_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                                  GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
                                  GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,Ly,Lz,dy,dz)
     
     return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties
  
-def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+def  create_gust_2D_IEAWind47(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                              Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
                              GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                              Ly,Lz,dy,dz):   
     '''
     Wrapper creating a 2-dimensional gust, i.e. a localised velocity excess with a
-    radial spatial shape in the Y-Z plane and a trapezoidal time evolution.
+    radial spatial shape in the Y-Z plane and a trapezoidal time evolution according to IEA Wind Task 47 project.
 
     LogFilePath           : path of the log file, appended with the gust information
     Output_Directory_Path : directory where the figures are saved
@@ -133,12 +133,41 @@ def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     '''
 
     # Create gust timeseries
-    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = gust_creator.gust_with_wind_direction_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = GustDefiniton.iea_wind_task47.IEAWind_Task47_Model(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
                                  Gust2DSpeedStartTime,Gust2DSpeedEndTime,Gust2DSpeedStart,Gust2DEccentricity,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
                                  GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
                                  Ly,Lz,dy,dz)
     
     return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties 
+
+def  create_gust_2D_circular(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+                             GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
+                             GustRadius,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+                             GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
+                             Ly,Lz,dy,dz):
+    '''
+    Wrapper creating a 2-dimensional circular gust in the Y-Z plane, with the time evolution
+    of a standard gust shape (HALF, FULL or IEC) and a smoothed radial shape defined by the gust radius.
+
+    Inputs are described in GustDefiniton.circular_gust.Circular_Gust_Model.
+
+    Returns
+    Time            : 1D array of time [s], size (nt,)
+    Speed           : 3D array of wind speed magnitude [m/s], shape (nt, ny, nz)
+    Direction       : 3D array of wind direction [deg], shape (nt, ny, nz)
+    Vel_x           : 3D array of longitudinal velocity [m/s], shape (nt, ny, nz)
+    Vel_y           : 3D array of lateral velocity [m/s], shape (nt, ny, nz)
+    Vel_z           : 3D array of vertical velocity [m/s], shape (nt, ny, nz)
+    grid_properties : tuple (dx,dy,dz,num_x,num_y,num_z) describing the wind grid
+    '''
+
+    Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties = GustDefiniton.circular_gust.Circular_Gust_Model(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmooth,
+                                 GustTypeSpeed,GustSpeedStartTime,GustSpeedEndTime,GustSpeedStart,GustSpeedAmplitude,
+                                 GustRadius,GustCenter_Y,GustCenter_Z,HubHeight,NominalRotorDiameter,
+                                 GustTypeDir,GustDirStartTime,GustDirEndTime,GustDirStart,GustDirAmplitude,
+                                 Ly,Lz,dy,dz)
+
+    return Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties
    
 def  generate_wind_file(LogFilePath,Output_Directory_Path,OutName,
                         Time,Speed,Direction,Vel_x,Vel_y,Vel_z,grid_properties,

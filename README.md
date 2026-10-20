@@ -33,13 +33,13 @@ pip install numpy matplotlib
 
 ## Running the Example
 
-The example inputs and execution flow are in [`main.py`](main.py). Edit the active parameter block, then run:
+The example inputs and execution flow are in [`main.py`](main.py). Edit the parameter block of one example, then run:
 
 ```bash
 python main.py
 ```
 
-The active example creates a localized 2D gust. The commented sections in `main.py` contain example setups for a 1D gust and a coherent 2D gust. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
+`main.py` contains commented example setups for a 1D gust, a circular 2D gust, and coherent and incoherent IEA Wind Task 47 2D gusts. Uncomment one example block to run it. The code prepares an output directory, generates diagnostic figures and a log file, and writes the requested `.wnd` file.
 
 ## 1D Gust Inputs
 
@@ -60,10 +60,20 @@ The 1D workflow is called through `manager.create_gust_1D()` and uses these inpu
 | `GustDirEndTime` | Direction gust end time in seconds. |
 | `GustDirStart` | Baseline wind direction in degrees. |
 | `GustDirAmplitude` | Direction gust amplitude in degrees. |
-| `Ly`, `Lz` | Lateral and vertical grid dimensions in metres. |
-| `dy`, `dz` | Lateral and vertical grid spacing in metres. |
+| `Ly`, `Lz` | Lateral and vertical grid dimensions in meters. |
+| `dy`, `dz` | Lateral and vertical grid spacing in meters. |
 
-## 2D Gust Inputs
+## 2D Circular Gust Inputs
+
+The circular 2D workflow is called through `manager.create_gust_2D_circular()`. The gust follows the `HALF`, `FULL`, or `IEC` shape in time and the smoothed radial shape of the 2D gust above in space. It uses the 1D inputs (`TimeEnd`, `TimeStep`, `TimeSmooth`, `GustTypeSpeed`, `GustSpeedStartTime`, `GustSpeedEndTime`, `GustSpeedStart`, `GustSpeedAmplitude`, the direction inputs and the grid inputs), the gust-center, `HubHeight` and `NominalRotorDiameter` inputs of the 2D gust, plus:
+
+| Parameter | Description |
+| --- | --- |
+| `GustRadius` | Gust radius in meters. The gust amplitude is halved at this distance from the gust center and decays smoothly to zero around it. |
+
+Here `TimeSmooth` is only the duration at the end of the wind file replaced by a linear ramp back to the initial value.
+
+## 2D IEA Wind Task 47 Gust Inputs
 
 The 2D workflow is called through `manager.create_gust_2D()`. It uses the same direction inputs as the 1D workflow, plus:
 
@@ -73,12 +83,13 @@ The 2D workflow is called through `manager.create_gust_2D()`. It uses the same d
 | `Gust2DSpeedEndTime` | Time at which the localized gust starts to decay. |
 | `Gust2DSpeedStart` | Uniform baseline wind speed in m/s. |
 | `Gust2DEccentricity` | Inverse spatial scale of the radial gust. Larger values produce a smaller, sharper gust core. |
-| `GustCenter_Y` | Gust-center offset from the grid center in the lateral direction, in metres. |
-| `GustCenter_Z` | Gust-center offset from the grid center in the vertical direction, in metres. |
+| `GustCenter_Y` | Gust-center offset from the grid center in the lateral direction, in meters. |
+| `GustCenter_Z` | Gust-center offset from the grid center in the vertical direction, in meters. |
 | `HubHeight` | Hub height used to convert the vertical grid to absolute height. |
 | `NominalRotorDiameter` | Un-coned rotor diameter used for the reference circle in contour plots. |
 
 For the 2D gust, `TimeSmooth` controls the linear rise and fall around the speed-gust interval and the linear ramp at the end of the wind file, and must be smaller than `Gust2DSpeedStartTime`.
+
 
 ## Wind-File Metadata
 
@@ -86,12 +97,12 @@ These parameters are passed to `manager.generate_wind_file()` and describe the t
 
 | Parameter | Description |
 | --- | --- |
-| `TowerExtremaLocation` | Largest absolute support-structure coordinate in metres; relevant for jacket or large support structures. |
-| `NominalRotorDiameter` | Un-coned rotor diameter in metres. |
-| `Overhang` | Rotor overhang in metres. |
-| `LateralOffset` | Rotor lateral offset in metres. |
+| `TowerExtremaLocation` | Largest absolute support-structure coordinate in meters; relevant for jacket or large support structures. |
+| `NominalRotorDiameter` | Un-coned rotor diameter in meters. |
+| `Overhang` | Rotor overhang in meters. |
+| `LateralOffset` | Rotor lateral offset in meters. |
 | `Floating` | Use `"YES"` or `"NO"` for floating-turbine metadata. |
-| `SeaDepth` | Sea depth in metres; relevant for floating configurations. |
+| `SeaDepth` | Sea depth in meters; relevant for floating configurations. |
 | `InitialNacelleAngle` | Initial nacelle angle in degrees. |
 | `RotorOrientation` | `"UPWIND"` or `"DOWNWIND"`. |
 | `OriginOfWindFileStart` | Wind-file reference origin, currently `"HUB"` or `"GLOBAL"`. |
@@ -104,7 +115,8 @@ Depending on the selected workflow, the output directory contains:
 - The generated Bladed wind file (`.wnd`).
 - `WindFileCreatorLog.dat`, containing grid, turbine, and gust parameters.
 - Three wind-signal plots at representative grid locations.
-- For 2D gusts, start, midpoint, and end contour plots for `vx` and `vy` using a consistent color scale.
+- For 2D gusts, start, quarter, midpoint, three-quarter, and end contour plots for `vx` and `vy` using a consistent color scale.
+- For 2D gusts, `Wind_Profile_Z.png` and `Wind_Profile_Y.png` with the vertical and lateral profiles of `vx` and `vy` at the same five time instances, taken through the turbine center (`y = 0` and hub height).
 
 ## Contributing and Bugs
 
