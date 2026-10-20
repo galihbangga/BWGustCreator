@@ -17,7 +17,35 @@ If Bug is found, please contact galih.bangga@dnv.com
 import numpy as np
 from .. import plotter
 
+# Figure name suffix, label and fraction of the speed gust duration of each plotted time instance
+TimeFractions = [("Start","start",0.0),
+                 ("Quarter","quarter",0.25),
+                 ("Mid","mid",0.5),
+                 ("ThreeQuarter","three-quarter",0.75),
+                 ("End","end",1.0)]
+
 ##############################################
+
+
+
+def grid_coordinates(grid_properties,HubHeight):
+    '''
+    Lateral and vertical coordinates of the wind grid, with the vertical one referenced to absolute height.
+
+    grid_properties : tuple (dx,dy,dz,num_x,num_y,num_z) describing the wind grid
+    HubHeight       : hub height [m], used to reference the grid to absolute height
+
+    Returns
+    Y_grid : 1D array of lateral coordinates [m], size (ny,)
+    Z_grid : 1D array of vertical coordinates [m] (absolute height), size (nz,)
+    '''
+
+    dx,dy,dz,num_x,num_y,num_z = grid_properties
+
+    Y_grid = (np.arange(num_y) - 0.5*(num_y-1)) * dy
+    Z_grid = (np.arange(num_z) - 0.5*(num_z-1)) * dz + HubHeight
+
+    return Y_grid,Z_grid
 
 
 
@@ -68,22 +96,66 @@ def plot_gust_contours_2D(Output_Directory_Path,Time,u_array,v_array,grid_proper
     GustSpeedEndTime      : end time [s] of the wind speed gust
     '''
 
-    dx,dy,dz,num_x,num_y,num_z = grid_properties
-
-    Y_grid = (np.arange(num_y) - 0.5*(num_y-1)) * dy
-    Z_grid = (np.arange(num_z) - 0.5*(num_z-1)) * dz + HubHeight
+    Y_grid,Z_grid = grid_coordinates(grid_properties,HubHeight)
     ContourLimit = max(np.max(np.abs(u_array)), np.max(np.abs(v_array)), 1.0)
     ContourLimits = (-ContourLimit, ContourLimit)
 
-    Contours = [("Wind_Contour_2D_Start.png","start",0.0),
-                ("Wind_Contour_2D_Quarter.png","quarter",0.25),
-                ("Wind_Contour_2D_Mid.png","mid",0.5),
-                ("Wind_Contour_2D_ThreeQuarter.png","three-quarter",0.75),
-                ("Wind_Contour_2D_End.png","end",1.0)]
-    for FigureName,Label,Fraction in Contours:
+    for Name,Label,Fraction in TimeFractions:
         print(" Plot 2D contour of the wind field at the gust " + Label + " time.")
         TimeInstance = GustSpeedStartTime + Fraction*(GustSpeedEndTime - GustSpeedStartTime)
-        plotter.plot_wind_contour_2d(Output_Directory_Path,FigureName,Time,Y_grid,Z_grid,
+        plotter.plot_wind_contour_2d(Output_Directory_Path,"Wind_Contour_2D_" + Name + ".png",Time,Y_grid,Z_grid,
                                      np.transpose(u_array,(0,2,1)),np.transpose(v_array,(0,2,1)),TimeInstance,
                                      HubHeight=HubHeight,Radius=NominalRotorDiameter*0.5,
                                      ColorLimits=ContourLimits)
+
+
+
+def plot_gust_profiles_z(Output_Directory_Path,Time,u_array,v_array,grid_properties,HubHeight,
+                         GustSpeedStartTime,GustSpeedEndTime):
+    '''
+    Plot the vertical profiles (z versus vx in the first row, z versus vy in the second row) at the start,
+    quarter, mid, three-quarter and end time of the speed gust, along the turbine center line (y = 0).
+
+    Output_Directory_Path : directory where the figure is saved
+    Time                  : 1D array of time [s], size (nt,)
+    u_array, v_array      : 3D arrays of longitudinal and lateral velocity [m/s], shape (nt, ny, nz)
+    grid_properties       : tuple (dx,dy,dz,num_x,num_y,num_z) describing the wind grid
+    HubHeight             : hub height [m], used to reference the grid to absolute height
+    GustSpeedStartTime    : start time [s] of the wind speed gust
+    GustSpeedEndTime      : end time [s] of the wind speed gust
+    '''
+
+    print(" Plot vertical profiles of the wind field at the gust time instances.")
+
+    Y_grid,Z_grid = grid_coordinates(grid_properties,HubHeight)
+    idx_j = int(np.argmin(np.abs(Y_grid)))
+    TimeInstances = [GustSpeedStartTime + Fraction*(GustSpeedEndTime - GustSpeedStartTime) for Name,Label,Fraction in TimeFractions]
+
+    plotter.plot_wind_profiles(Output_Directory_Path,"Wind_Profile_Z.png",Time,Z_grid,u_array[:,idx_j,:],v_array[:,idx_j,:],TimeInstances,
+                               CoordinateLabel=r'$z$ [m]')
+
+
+
+def plot_gust_profiles_y(Output_Directory_Path,Time,u_array,v_array,grid_properties,HubHeight,
+                         GustSpeedStartTime,GustSpeedEndTime):
+    '''
+    Plot the lateral profiles (y versus vx in the first row, y versus vy in the second row) at the start,
+    quarter, mid, three-quarter and end time of the speed gust, along the turbine center line (z = hub height).
+
+    Output_Directory_Path : directory where the figure is saved
+    Time                  : 1D array of time [s], size (nt,)
+    u_array, v_array      : 3D arrays of longitudinal and lateral velocity [m/s], shape (nt, ny, nz)
+    grid_properties       : tuple (dx,dy,dz,num_x,num_y,num_z) describing the wind grid
+    HubHeight             : hub height [m], used to reference the grid to absolute height
+    GustSpeedStartTime    : start time [s] of the wind speed gust
+    GustSpeedEndTime      : end time [s] of the wind speed gust
+    '''
+
+    print(" Plot lateral profiles of the wind field at the gust time instances.")
+
+    Y_grid,Z_grid = grid_coordinates(grid_properties,HubHeight)
+    idx_k = int(np.argmin(np.abs(Z_grid - HubHeight)))
+    TimeInstances = [GustSpeedStartTime + Fraction*(GustSpeedEndTime - GustSpeedStartTime) for Name,Label,Fraction in TimeFractions]
+
+    plotter.plot_wind_profiles(Output_Directory_Path,"Wind_Profile_Y.png",Time,Y_grid,u_array[:,:,idx_k],v_array[:,:,idx_k],TimeInstances,
+                               CoordinateLabel=r'$y$ [m]')

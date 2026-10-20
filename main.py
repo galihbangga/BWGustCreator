@@ -95,13 +95,13 @@ TimeStep = 0.1 # in s
 TimeSmooth = 5 # in s, last part of TimeEnd replaced by a linear ramp back to the initial value (avoiding instability)
 
 # Gust definition for wind speed
-GustTypeSpeed = 'IEC' # 'HALF', 'FULL' or 'IEC'
+GustTypeSpeed = 'HALF' # 'HALF', 'FULL' or 'IEC'
 GustSpeedStartTime = 100 # in s
 GustSpeedEndTime = 200 # in s
 GustSpeedStart = 6 # in m/s
 GustSpeedAmplitude = 5 # in m/s
-GustRadius = 70 # in m
-GustCenter_Y = 90 # in m, measured from center of grid
+GustRadius = 100 # in m
+GustCenter_Y = 50 # in m, measured from center of grid
 GustCenter_Z = (90-HubHeight) # in m, measured from center of grid
 
 # Gust definition for wind direction

@@ -112,6 +112,10 @@ def Circular_Gust_Model(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeS
                                  GustSpeedStartTime,GustSpeedEndTime,GustDirStartTime,GustDirEndTime)
     gust_plots.plot_gust_contours_2D(Output_Directory_Path,Time,u_array,v_array,grid_properties,HubHeight,NominalRotorDiameter,
                                      GustSpeedStartTime,GustSpeedEndTime)
+    gust_plots.plot_gust_profiles_z(Output_Directory_Path,Time,u_array,v_array,grid_properties,HubHeight,
+                                    GustSpeedStartTime,GustSpeedEndTime)
+    gust_plots.plot_gust_profiles_y(Output_Directory_Path,Time,u_array,v_array,grid_properties,HubHeight,
+                                    GustSpeedStartTime,GustSpeedEndTime)
 
 
     with open(LogFilePath, 'a') as the_file:
@@ -131,8 +135,8 @@ def Circular_Gust_Model(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeS
             the_file.write(' Gust start magnitude wind speed: ' + str(GustSpeedStart) +' m/s\n')
             the_file.write(' Gust amplitude wind speed: ' + str(GustSpeedAmplitude) +' m/s\n')
             the_file.write(' Gust radius: ' + str(GustRadius) +' m\n')
-            the_file.write(' Gust center Y: ' + str(GustCenter_Y) +' m\n')
-            the_file.write(' Gust center Z: ' + str(GustCenter_Z) +' m\n')
+            the_file.write(' Gust center Y from center of grid: ' + str(GustCenter_Y) +' m\n')
+            the_file.write(' Gust center Z from center of grid: ' + str(GustCenter_Z) +' m\n')
             the_file.write(' \n')
             the_file.write(' Gust type wind direction: ' + str(GustTypeDir) +'\n')
             the_file.write(' Gust start time wind direction: ' + str(GustDirStartTime) +' s\n')

@@ -214,3 +214,43 @@ def plot_wind_contour_2d(Output_Directory_Path,FigureName,Time,Y,Z,Field_x,Field
 
     plt.tight_layout()
     plt.savefig(os.path.join(Output_Directory_Path,FigureName), dpi=300, bbox_inches='tight')
+
+
+
+def plot_wind_profiles(Output_Directory_Path,FigureName,Time,Coordinate,Field_x,Field_y,TimeInstances,
+                       CoordinateLabel=r'$z$ [m]',Labels=(r'$v_x$ [m/s]',r'$v_y$ [m/s]')):
+    '''
+    Plot 1D velocity profiles along a coordinate at several time instances. The first row
+    shows the first velocity component and the second row the second one, one subplot per time.
+
+    Output_Directory_Path : directory where the figure is saved
+    FigureName            : file name of the saved figure
+    Time                  : 1D array of time [s], size (nt,)
+    Coordinate            : 1D array of the coordinate along which the profile is taken [m], size (nc,)
+    Field_x               : 2D array of the first velocity component, shape (nt, nc)
+    Field_y               : 2D array of the second velocity component, shape (nt, nc)
+    TimeInstances         : list of desired times [s]; nearest available time steps are used
+    CoordinateLabel       : label of the coordinate axis
+    Labels                : labels of the two velocity components
+    '''
+
+    Time = np.asarray(Time)
+    Idx  = [int(np.argmin(np.abs(Time - TimeInstance))) for TimeInstance in TimeInstances]
+    nplot = len(Idx)
+
+    fig, axes = plt.subplots(2, nplot, figsize=(4*nplot, 8), sharey=True, squeeze=False)
+
+    for row, (Field, LabelText) in enumerate(zip((Field_x,Field_y), Labels)):
+        x_lim_1,x_lim_2 = calculate_y_limit(np.asarray(Field)[Idx],0.1)
+        for col, idx in enumerate(Idx):
+            ax = axes[row,col]
+            ax.plot(np.asarray(Field)[idx],Coordinate,linestyle="-", color="black", linewidth=1)
+            ax.set_xlim(x_lim_1,x_lim_2)
+            ax.set_xlabel(LabelText)
+            if (col == 0):
+                ax.set_ylabel(CoordinateLabel)
+            ax.set_title(r'$t$ = %.2f s' % Time[idx])
+            ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(Output_Directory_Path,FigureName), dpi=300, bbox_inches='tight')
