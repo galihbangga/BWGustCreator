@@ -195,7 +195,7 @@ dz = 5 # vertical grid spacing in m
 
 
 # Output name
-OutName = "Wind_2DGust_InCoherent_Spd_Dir_3600s_400x400.wnd"
+OutName = "Wind_2DGust_InCoherent.wnd"
 
 
 # Code calls
