@@ -63,7 +63,17 @@ The 1D workflow is called through `manager.create_gust_1D()` and uses these inpu
 | `Ly`, `Lz` | Lateral and vertical grid dimensions in metres. |
 | `dy`, `dz` | Lateral and vertical grid spacing in metres. |
 
-## 2D Gust Inputs
+## 2D Circular Gust Inputs
+
+The circular 2D workflow is called through `manager.create_gust_2D_circular()`. The gust follows the `HALF`, `FULL`, or `IEC` shape in time and the smoothed radial shape of the 2D gust above in space. It uses the 1D inputs (`TimeEnd`, `TimeStep`, `TimeSmooth`, `GustTypeSpeed`, `GustSpeedStartTime`, `GustSpeedEndTime`, `GustSpeedStart`, `GustSpeedAmplitude`, the direction inputs and the grid inputs), the gust-center, `HubHeight` and `NominalRotorDiameter` inputs of the 2D gust, plus:
+
+| Parameter | Description |
+| --- | --- |
+| `GustRadius` | Gust radius in metres. The gust amplitude is halved at this distance from the gust center and decays smoothly to zero around it. |
+
+Here `TimeSmooth` is only the duration at the end of the wind file replaced by a linear ramp back to the initial value.
+
+## 2D IEA Wind Task 47 Gust Inputs
 
 The 2D workflow is called through `manager.create_gust_2D()`. It uses the same direction inputs as the 1D workflow, plus:
 
@@ -80,15 +90,6 @@ The 2D workflow is called through `manager.create_gust_2D()`. It uses the same d
 
 For the 2D gust, `TimeSmooth` controls the linear rise and fall around the speed-gust interval and the linear ramp at the end of the wind file, and must be smaller than `Gust2DSpeedStartTime`.
 
-## 2D Circular Gust Inputs
-
-The circular 2D workflow is called through `manager.create_gust_2D_circular()`. The gust follows the `HALF`, `FULL`, or `IEC` shape in time and the smoothed radial shape of the 2D gust above in space. It uses the 1D inputs (`TimeEnd`, `TimeStep`, `TimeSmooth`, `GustTypeSpeed`, `GustSpeedStartTime`, `GustSpeedEndTime`, `GustSpeedStart`, `GustSpeedAmplitude`, the direction inputs and the grid inputs), the gust-center, `HubHeight` and `NominalRotorDiameter` inputs of the 2D gust, plus:
-
-| Parameter | Description |
-| --- | --- |
-| `GustRadius` | Gust radius in metres. The gust amplitude is halved at this distance from the gust center and decays smoothly to zero around it. |
-
-Here `TimeSmooth` is only the duration at the end of the wind file replaced by a linear ramp back to the initial value.
 
 ## Wind-File Metadata
 
