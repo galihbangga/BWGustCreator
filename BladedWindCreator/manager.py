@@ -59,8 +59,8 @@ def  create_gust_1D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     LogFilePath           : path of the log file, appended with the gust information
     Output_Directory_Path : directory where the figures are saved
     TimeStep              : time step [s] of the wind file
-    TimeEnd               : target end time [s] of the gust signal, before smoothing
-    TimeSmooth            : duration [s] of the linear ramp appended after TimeEnd
+    TimeEnd               : end time [s] of the wind file
+    TimeSmooth            : duration [s] of the linear ramp at the end of the wind file (within TimeEnd)
     GustTypeSpeed         : gust shape for wind speed ("HALF" or "IEC")
     GustSpeedStartTime    : start time [s] of the wind speed gust
     GustSpeedEndTime      : end time [s] of the wind speed gust
@@ -103,7 +103,8 @@ def  create_gust_2D(LogFilePath,Output_Directory_Path,TimeStep,TimeEnd,TimeSmoot
     Output_Directory_Path : directory where the figures are saved
     TimeStep              : time step [s] of the wind file
     TimeEnd               : end time [s] of the wind file
-    TimeSmooth            : ramp-up/ramp-down duration [s] of the gust in time
+    TimeSmooth            : ramp-up/ramp-down duration [s] of the gust in time, also the duration [s]
+                            of the linear ramp at the end of the wind file (within TimeEnd)
     Gust2DSpeedStartTime  : time [s] at which the gust reaches its full magnitude
     Gust2DSpeedEndTime    : time [s] at which the gust starts to decay
     Gust2DSpeedStart      : baseline (uniform) wind speed [m/s]

@@ -49,7 +49,7 @@ The 1D workflow is called through `manager.create_gust_1D()` and uses these inpu
 | --- | --- |
 | `TimeEnd` | Duration of the primary wind signal in seconds. |
 | `TimeStep` | Wind-file time step in seconds. |
-| `TimeSmooth` | Additional linear ramp duration used to return the velocity to its initial value. |
+| `TimeSmooth` | Duration at the end of the wind file replaced by a linear ramp back to the initial value. For the 2D gust it is also the linear rise/fall duration of the gust. |
 | `GustTypeSpeed` | Speed gust shape: `HALF`, `FULL`, or `IEC`. |
 | `GustSpeedStartTime` | Speed gust start time in seconds. |
 | `GustSpeedEndTime` | Speed gust end time in seconds. |
@@ -78,7 +78,7 @@ The 2D workflow is called through `manager.create_gust_2D()`. It uses the same d
 | `HubHeight` | Hub height used to convert the vertical grid to absolute height. |
 | `NominalRotorDiameter` | Un-coned rotor diameter used for the reference circle in contour plots. |
 
-For the 2D gust, `TimeSmooth` controls the linear rise and fall around the speed-gust interval and must be smaller than `Gust2DSpeedStartTime`.
+For the 2D gust, `TimeSmooth` controls the linear rise and fall around the speed-gust interval and the linear ramp at the end of the wind file, and must be smaller than `Gust2DSpeedStartTime`.
 
 ## Wind-File Metadata
 
